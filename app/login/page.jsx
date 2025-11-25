@@ -6,6 +6,7 @@ import axios from "axios"
 import { Mail, Lock, Eye, EyeOff, Loader2, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { API_BASE_URL } from "../constant/constant"
+import api from "../utils/axiosInstance"
 
 export default function Login() {
   const router = useRouter()
@@ -19,29 +20,36 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/login`,
-        formData,
-        { withCredentials: true }
-      )
-      if (response.status === 200) {
-        router.push("/")
-      } else {
-        setError("Login failed.")
+  try {
+    const res = await api.post(
+      `${API_BASE_URL}/auth/login`,
+      {
+        email: formData.email,
+        password: formData.password,
+      },
+      {
+        withCredentials: true, // VERY IMPORTANT (allows cookies)
       }
-    } catch (err) {
-      console.error("Login error:", err)
-      setError("Invalid credentials.")
-    } finally {
-      setIsLoading(false)
+    );
+
+    if (res.data?.success || res.status === 200) {
+      router.push("/dashboard/whatsapp"); // redirect after login
+    } else {
+      setError("Login failed.");
     }
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err?.response?.data?.detail || "Invalid credentials.");
+  } finally {
+    setIsLoading(false);
   }
+};
+
 
   return (
     <div className="flex flex-col lg:flex-row h-screen justify-center">
