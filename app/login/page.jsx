@@ -116,7 +116,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full h-12 pl-10 border border-gray-200 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   autoComplete="email"
                 />
               </div>
@@ -137,7 +137,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 pr-10 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full h-12 pl-10 pr-10 border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   autoComplete="current-password"
                 />
                 <button
@@ -168,12 +168,12 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-8 text-center text-gray-600">
+          {/* <div className="mt-8 text-center text-gray-600">
             Don’t have an account?{' '}
             <Link href="/register" className="font-medium text-purple-600 hover:text-purple-500">
               Create one
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
