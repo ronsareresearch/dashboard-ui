@@ -29,19 +29,14 @@ export default function Dashboard() {
   // LOGOUT FUNCTION
   // -----------------------------
   const handleLogout = async () => {
-    try {
-      await axios.post(
-        `${API_BASE_URL}/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+  try {
+    await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+    router.push("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 
-      document.cookie = "auth_token=; Max-Age=0; path=/;";
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden">
