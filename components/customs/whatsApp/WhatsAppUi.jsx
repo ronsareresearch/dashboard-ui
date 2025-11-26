@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FileText, User2 } from "lucide-react";
-import { API_BASE_URL, WS_URL } from "../constant/constant";
+import { API_BASE_URL } from "@/app/constant/constant";
 
 // const API_BASE_URL = "http://localhost:4000";
 // const API_BASE_URL = "https://chatapi.ronsare.site";
