@@ -99,7 +99,7 @@ export default function Dashboard() {
               className="flex items-center gap-3 px-4 py-2 hover:text-white text-gray-400"
             >
               <Mail size={18} />
-              <span>Email</span>
+              <span>Knowledge Base</span>
             </a>
 
             <a
