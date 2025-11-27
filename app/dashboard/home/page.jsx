@@ -172,7 +172,7 @@ export default function HomePage() {
                 <h2 className="text-xl font-semibold  text-gray-900 tracking-tight shrink-0">
                   Latest Registered Users
                 </h2>
-                <span className="text-blue-800">See More</span>
+                <Link href="/dashboard/user-profile" className="text-blue-800 cursor-pointer">See More</Link>
                </div>
 
                 {/* Scrollable list */}

@@ -77,49 +77,57 @@ const data = {
       ],
     },
     {
-      title: "Models",
+      title: "Services",
       url: "#",
       icon: Bot,
       items: [
         {
-          title: "Mistar 7b",
+          title: "Tax Filing",
           url: "#",
         },
         {
-          title: "Explorer",
+          title: "Accounting",
           url: "#",
         },
         {
-          title: "Quantum",
+          title: "Immigration Service",
+          url: "#",
+        },
+        {
+          title: "Business Insurance",
+          url: "#",
+        },
+        {
+          title: "Payroll Management",
+          url: "#",
+        },
+        {
+          title: "Financial Advisory",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "User Activity",
       url: "#",
       icon: BookOpen,
       items: [
-        {
-          title: "Introduction",
-          url: "#",
+           {
+          title: "User Profile",
+          url: "/dashboard/user-profile",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "User Actions",
+          url: "/dashboard/user-actions",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
+          title: "Activity Logs",
           url: "#",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "Profile",
       url: "#",
       icon: Settings2,
       items: [
@@ -128,17 +136,10 @@ const data = {
           url: "#",
         },
         {
-          title: "Team",
+          title: "Settings",
           url: "#",
         },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+       
       ],
     },
   ],
