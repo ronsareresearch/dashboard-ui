@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FileText, User2 } from "lucide-react";
-import { API_BASE_URL } from "@/app/constant/constant";
+import { API_BASE_URL, WS_URL } from "@/app/constant/constant";
 
 // const API_BASE_URL = "http://localhost:4000";
 // const API_BASE_URL = "https://chatapi.ronsare.site";
@@ -347,57 +347,56 @@ export default function WhatsAppUi() {
                     </div>
                 )}
 
-             {/* Messages Section */}
-<div className="flex-1 p-6 overflow-y-auto bg-gray-100">
-    {isLoading ? (
-        <div className="text-center py-4 text-gray-500">Loading...</div>
-    ) : (
-        <>
-            {messages.map((m) => (
-                <div
-                    key={m.id}
-                    className={`flex mb-3 ${
-                        m.direction === "incoming" ? "justify-start" : "justify-end"
-                    }`}
-                >
-                    <div
-                        className={`
+                {/* Messages Section */}
+                <div className="flex-1 p-6 overflow-y-auto bg-gray-100">
+                    {isLoading ? (
+                        <div className="text-center py-4 text-gray-500">Loading...</div>
+                    ) : (
+                        <>
+                            {messages.map((m) => (
+                                <div
+                                    key={m.id}
+                                    className={`flex mb-3 ${m.direction === "incoming" ? "justify-start" : "justify-end"
+                                        }`}
+                                >
+                                    <div
+                                        className={`
                             max-w-[80%] md:max-w-[60%] 
-                            px-4 py-2 rounded-2xl shadow-sm border break-words whitespace-pre-wrap 
+                            px-4 py-2 rounded-2xl shadow-sm border wrap-break-words whitespace-pre-wrap 
                             ${m.direction === "incoming"
-                                ? "bg-white border-gray-200"
-                                : "bg-green-100 border-green-300"
-                            }
+                                                ? "bg-white border-gray-200"
+                                                : "bg-green-100 border-green-300"
+                                            }
                         `}
-                    >
-                        {/* DOCUMENT MESSAGE */}
-                        {m.message_type === "document" ? (
-                            <a
-                                href={m.drive_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-blue-600 underline break-all"
-                            >
-                                <FileText size={18} />
-                                <span>{m.text_body || "Open Document"}</span>
-                            </a>
-                        ) : (
-                            <p className="text-gray-800 break-words whitespace-pre-wrap">
-                                {m.text_body || "[media]"}
-                            </p>
-                        )}
+                                    >
+                                        {/* DOCUMENT MESSAGE */}
+                                        {m.message_type === "document" ? (
+                                            <a
+                                                href={m.drive_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-blue-600 underline break-all"
+                                            >
+                                                <FileText size={18} />
+                                                <span>{m.text_body || "Open Document"}</span>
+                                            </a>
+                                        ) : (
+                                            <p className="text-gray-800 wrap-break-words whitespace-pre-wrap">
+                                                {m.text_body || "[media]"}
+                                            </p>
+                                        )}
 
-                        <p className="text-xs text-gray-500 mt-1 text-right">
-                            {formatTime(m.timestamp)}
-                        </p>
-                    </div>
+                                        <p className="text-xs text-gray-500 mt-1 text-right">
+                                            {formatTime(m.timestamp)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div ref={messagesEndRef} />
+                        </>
+                    )}
                 </div>
-            ))}
-
-            <div ref={messagesEndRef} />
-        </>
-    )}
-</div>
 
 
                 {/* Input Bar */}

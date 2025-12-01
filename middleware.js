@@ -8,6 +8,7 @@ export function middleware(req) {
   const protectedRoutes = [
     "/",                    // homepage
     "/dashboard/whatsapp", // your dashboard page
+    "/dashboard/home",
   ];
 
   const isProtected = protectedRoutes.some(
@@ -25,5 +26,6 @@ export const config = {
   matcher: [
     "/",
     "/dashboard/whatsapp/:path*", // matches `/dashboard/whatsapp` and its children
+    "/dashboard/home/:path*", // matches `/dashboard/whatsapp` and its children
   ],
 };

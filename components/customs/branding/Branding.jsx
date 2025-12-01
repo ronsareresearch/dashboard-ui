@@ -2,16 +2,27 @@
 
 import * as React from "react"
 import { useSidebar } from "@/components/ui/sidebar"
+import Image from "next/image"
 
 export function Branding() {
   const { state } = useSidebar() // gives 'collapsed' or 'expanded'
 
   return (
-    <div className={`flex items-center gap-2 ${state === "collapsed" ? "" : "justify-center px-4 py-3" } `}>
+    <div className={`flex items-center gap-2 ${state === "collapsed" ? "" : "justify-start py-3" } `}>
       {/* Logo or icon always visible */}
-      <div className="flex p-2 h-6 items-center justify-center rounded-full bg-blue-500 text-white font-bold">
-        G
-      </div>
+  <div className="flex items-center justify-center font-bold">
+  <div className="h-10">
+    <Image
+      src="/logo.png"
+      alt="Logo"
+      width={100}
+      height={100}
+      className="h-full w-auto object-contain"
+    />
+  </div>
+</div>
+
+
 
       {/* Full text only when expanded */}
       <div
@@ -20,7 +31,8 @@ export function Branding() {
         }`}
       >
         <span className="text-xl font-bold text-white">
-          Guru Accounting
+          {/* AI */}
+          
         </span>
       </div>
     </div>

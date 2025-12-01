@@ -70,64 +70,61 @@ const data = {
           title: "Knowledge Base",
           url: "/dashboard/knowledge-base",
         },
-        {
-          title: "Chat",
-          url: "#",
-        },
       ],
     },
     {
-      title: "Services",
+      title: "Customer",
       url: "#",
       icon: Bot,
       items: [
+        //    {
+        //   title: "Business Insurance",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Tax Filing",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Accounting",
+        //   url: "#",
+        // },
         {
-          title: "Tax Filing",
-          url: "#",
+          title: "Immigration Services",
+          url: "/dashboard/immigration-services",
         },
-        {
-          title: "Accounting",
-          url: "#",
-        },
-        {
-          title: "Immigration Service",
-          url: "#",
-        },
-        {
-          title: "Business Insurance",
-          url: "#",
-        },
-        {
-          title: "Payroll Management",
-          url: "#",
-        },
-        {
-          title: "Financial Advisory",
-          url: "#",
-        },
+
+        // {
+        //   title: "Payroll Management",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Financial Advisory",
+        //   url: "#",
+        // },
       ],
     },
     {
-      title: "User Activity",
+      title: "Documents",
       url: "#",
       icon: BookOpen,
       items: [
-           {
-          title: "User Profile",
+        {
+          title: "Forms",
           url: "/dashboard/user-profile",
         },
-        {
-          title: "User Actions",
-          url: "/dashboard/user-actions",
-        },
-        {
-          title: "Activity Logs",
-          url: "#",
-        },
+        // {
+        //   title: "User Actions",
+        //   url: "/dashboard/user-actions",
+        // },
+        // {
+        //   title: "Activity Logs",
+        //   url: "#",
+        // },
       ],
     },
     {
-      title: "Profile",
+      title: "User Management",
       url: "#",
       icon: Settings2,
       items: [
@@ -139,23 +136,23 @@ const data = {
           title: "Settings",
           url: "#",
         },
-       
+
       ],
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Docs",
       url: "#",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "Marketing Material",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "Holidays",
       url: "#",
       icon: Map,
     },
@@ -172,13 +169,16 @@ export function AppSidebar({
         <Branding />
       </SidebarHeader>
 
-
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
+
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <div className="w-full text-center py-4 border-t border-gray-600 flex flex-col items-center space-y-1">
+          <span className="text-gray-400 text-xs">© 2025 All rights reserved</span>
+          <span className="text-white/80 text-sm font-semibold">Developed by Ronsare</span>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

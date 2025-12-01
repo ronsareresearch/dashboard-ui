@@ -16,56 +16,56 @@ import { Briefcase, FileText, Shield, Users, DollarSign, Compass } from "lucide-
 import Link from "next/link";
 import { useState } from "react";
 
-const services = [
-    {
-        name: "Tax Filing",
-        description: "Easily file your taxes with expert guidance",
-        icon: FileText,
-        bgColor: "bg-blue-200",
-        iconColor: "text-blue-600",
-        redirect: "/dashboard/tax-filing",
-    },
-    {
-        name: "Accounting",
-        description: "Manage your accounts efficiently",
-        icon: Briefcase,
-        bgColor: "bg-green-200",
-        iconColor: "text-green-600",
-        redirect: "/dashboard/accounting-filing",
-    },
-    {
-        name: "Immigration Service",
-        description: "Visa and migration support",
-        icon: Compass,
-        bgColor: "bg-gray-200",
-        iconColor: "text-gray-600",
-        redirect: "/dashboard/immigration-service-filing",
-    },
-    {
-        name: "Business Insurance",
-        description: "Protect your business with ease",
-        icon: Shield,
-        bgColor: "bg-red-200",
-        iconColor: "text-red-600",
-        redirect: "/dashboard/business-insurance-filing",
-    },
-    {
-        name: "Payroll Management",
-        description: "Simplify employee payments",
-        icon: DollarSign,
-        bgColor: "bg-purple-200",
-        iconColor: "text-purple-600",
-        redirect: "/dashboard/payroll-management-filing",
-    },
-    {
-        name: "Financial Advisory",
-        description: "Get smart financial advice",
-        icon: Users,
-        bgColor: "bg-pink-200",
-        iconColor: "text-pink-600",
-        redirect: "/dashboard/financial-advisory-filing",
-    },
-];
+// const services = [
+//     {
+//         name: "Tax Filing",
+//         description: "Easily file your taxes with expert guidance",
+//         icon: FileText,
+//         bgColor: "bg-blue-200",
+//         iconColor: "text-blue-600",
+//         redirect: "/dashboard/tax-filing",
+//     },
+//     {
+//         name: "Accounting",
+//         description: "Manage your accounts efficiently",
+//         icon: Briefcase,
+//         bgColor: "bg-green-200",
+//         iconColor: "text-green-600",
+//         redirect: "/dashboard/accounting-filing",
+//     },
+//     {
+//         name: "Immigration Service",
+//         description: "Visa and migration support",
+//         icon: Compass,
+//         bgColor: "bg-gray-200",
+//         iconColor: "text-gray-600",
+//         redirect: "/dashboard/immigration-service-filing",
+//     },
+//     {
+//         name: "Business Insurance",
+//         description: "Protect your business with ease",
+//         icon: Shield,
+//         bgColor: "bg-red-200",
+//         iconColor: "text-red-600",
+//         redirect: "/dashboard/business-insurance-filing",
+//     },
+//     {
+//         name: "Payroll Management",
+//         description: "Simplify employee payments",
+//         icon: DollarSign,
+//         bgColor: "bg-purple-200",
+//         iconColor: "text-purple-600",
+//         redirect: "/dashboard/payroll-management-filing",
+//     },
+//     {
+//         name: "Financial Advisory",
+//         description: "Get smart financial advice",
+//         icon: Users,
+//         bgColor: "bg-pink-200",
+//         iconColor: "text-pink-600",
+//         redirect: "/dashboard/financial-advisory-filing",
+//     },
+// ];
 
 const latestUsers = [
     { name: "John Doe", role: "Business Owner", date: "24 Nov", time: "10:22 AM" },
@@ -208,7 +208,7 @@ export default function UserProfilePage() {
 
                         {/* HEADER (fixed) */}
                         <div className="space-y-6 shrink-0">
-                            <h2 className="text-2xl font-semibold text-gray-800">User Profile</h2>
+                            <h2 className="text-2xl font-semibold text-gray-800">Register Profile</h2>
 
                             {/* USER CARD */}
                             <div className="flex items-center gap-4">
