@@ -104,6 +104,17 @@ const data = {
         // },
       ],
     },
+     {
+      title: "Emails",
+      url: "#",
+      icon: Settings2,
+      items: [
+        {
+          title: "inbox",
+          url: "/dashboard/email-inbox",
+        },
+      ],
+    },
     {
       title: "Documents",
       url: "#",
@@ -123,6 +134,7 @@ const data = {
         // },
       ],
     },
+   
     {
       title: "User Management",
       url: "#",

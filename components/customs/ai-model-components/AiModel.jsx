@@ -23,8 +23,11 @@ export default function AiModel() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [showPromo, setShowPromo] = useState(true);
-  const [loading, setLoading] = useState(false); // ✅ Loading state
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // 🔥 NEW: Image upload ref
+  const fileInputRef = useRef(null);
 
   const models = ["Gemini", "Perplexity"];
 
@@ -48,6 +51,7 @@ export default function AiModel() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // ✅ SEND TEXT MESSAGE
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -57,15 +61,21 @@ export default function AiModel() {
 
     if (showPromo) setShowPromo(false);
 
-    // Show loading indicator
-    const loadingMsg = { role: "ai", text: selectedModel + " is typing...", model: selectedModel, loading: true };
+    const loadingMsg = {
+      role: "ai",
+      text: selectedModel + " is typing...",
+      model: selectedModel,
+      loading: true,
+    };
+
     setMessages((prev) => [...prev, loadingMsg]);
     setLoading(true);
 
     try {
-      let url = selectedModel === "Perplexity"
-        ? "http://localhost:4000/perplexity"
-        : "http://localhost:4000/gemini";
+      let url =
+        selectedModel === "Perplexity"
+          ? "http://localhost:4000/perplexity"
+          : "http://localhost:4000/gemini";
 
       const res = await fetch(url, {
         method: "POST",
@@ -77,16 +87,19 @@ export default function AiModel() {
       let aiText = data.text || data.error || "Something went wrong.";
       aiText = cleanAiText(aiText);
 
-      // Replace loading message with actual AI response
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.loading ? { role: "ai", text: aiText, model: selectedModel } : msg
+          msg.loading
+            ? { role: "ai", text: aiText, model: selectedModel }
+            : msg
         )
       );
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.loading ? { role: "ai", text: "Server error.", model: selectedModel } : msg
+          msg.loading
+            ? { role: "ai", text: "Server error.", model: selectedModel }
+            : msg
         )
       );
     } finally {
@@ -94,12 +107,90 @@ export default function AiModel() {
     }
   };
 
+  // ✅ NEW — HANDLE IMAGE UPLOAD
+const handleUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const localURL = URL.createObjectURL(file);
+
+  // Add preview to chat
+  const imageMsg = {
+    role: "user",
+    type: "image",
+    image: localURL,
+  };
+
+  setMessages((prev) => [...prev, imageMsg]);
+
+  // Add loading placeholder
+  const loadingMsg = {
+    role: "ai",
+    text: selectedModel + " is analyzing...",
+    model: selectedModel,
+    loading: true,
+  };
+
+  setMessages((prev) => [...prev, loadingMsg]);
+  setLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file); // 👈 unified name for backend
+
+    // 👇 IMPORTANT CHANGE:
+    // Perplexity DOES NOT SUPPORT images.
+    // So we always send images/PDF to GEMINI endpoint.
+    const url = "http://localhost:4000/gemini/image";
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    const aiText = data.text || "Something went wrong.";
+
+    // Replace loading message with final output
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.loading
+          ? { role: "ai", text: aiText, model: selectedModel }
+          : msg
+      )
+    );
+  } catch (err) {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.loading
+          ? {
+              role: "ai",
+              text: "Image/PDF analysis failed.",
+              model: selectedModel,
+            }
+          : msg
+      )
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   return (
     <div className="w-[30%] h-full py-4 pr-4 bg-gray-100 backdrop-blur-xl rounded-br-3xl flex flex-col">
+      {/** Hidden image input */}
+      <input
+        type="file"
+        accept="image/*,application/pdf"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleUpload}
+      />
+
       <div className="bg-white h-full rounded-2xl flex flex-col overflow-hidden">
         <div className="flex flex-col justify-between h-full bg-gray-800 text-white rounded-xl overflow-hidden">
-
-          {/* Header */}
+          {/* HEADER */}
           <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
             <Popover>
               <PopoverTrigger asChild>
@@ -108,20 +199,18 @@ export default function AiModel() {
                   className="text-white hover:bg-gray-600 rounded-full px-4 py-2 text-sm"
                 >
                   <Bot size={24} className="text-white/70" />
-                  {selectedModel} <ChevronDown className="ml-2" />
+                  {selectedModel}
+                  <ChevronDown className="ml-2" />
                 </Button>
               </PopoverTrigger>
 
-              <PopoverContent
-                className="w-48 bg-gray-900 text-white border border-gray-700 shadow-xl rounded-xl"
-                align="start"
-              >
+              <PopoverContent className="w-48 bg-gray-900 text-white border border-gray-700 shadow-xl rounded-xl">
                 <div className="flex flex-col space-y-1">
                   {models.map((model) => (
                     <button
                       key={model}
                       onClick={() => setSelectedModel(model)}
-                      className={`px-3 py-2 text-left rounded-md text-sm hover:bg-gray-700 transition ${
+                      className={`px-3 py-2 text-left rounded-md text-sm hover:bg-gray-700 ${
                         selectedModel === model ? "bg-gray-700" : ""
                       }`}
                     >
@@ -137,7 +226,7 @@ export default function AiModel() {
             </button>
           </div>
 
-          {/* Welcome screen */}
+          {/* WELCOME SCREEN */}
           {messages.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
               <div className="bg-gray-700 p-4 rounded-full shadow-md">
@@ -152,7 +241,7 @@ export default function AiModel() {
             </div>
           )}
 
-          {/* Chat messages */}
+          {/* CHAT MESSAGES */}
           {messages.length > 0 && (
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {messages.map((msg, i) => (
@@ -164,19 +253,29 @@ export default function AiModel() {
                       : "bg-gray-700 self-start mr-auto"
                   }`}
                 >
+                  {/* Model label */}
                   {msg.role === "ai" && msg.model && (
                     <span className="text-[10px] text-gray-300 mb-1">
                       {msg.model} response
                     </span>
                   )}
-                  <span>{msg.text}</span>
+
+                  {/* NEW: Image support */}
+                  {msg.type === "image" ? (
+                    <img
+                      src={msg.image}
+                      className="rounded-lg max-w-[180px] border border-gray-600"
+                    />
+                  ) : (
+                    <span>{msg.text}</span>
+                  )}
                 </div>
               ))}
-              <div ref={messagesEndRef} /> {/* auto-scroll anchor */}
+              <div ref={messagesEndRef} />
             </div>
           )}
 
-          {/* Promo Box */}
+          {/* PROMO BOX */}
           {showPromo && (
             <div className="px-4 pb-4">
               <div className="relative bg-[#111] rounded-3xl p-4 border border-[#222] flex flex-col gap-1">
@@ -191,7 +290,8 @@ export default function AiModel() {
                   ⚠️ Warning
                 </p>
                 <p className="text-xs text-gray-300">
-                  Do not share sensitive personal information in this chat. AI responses may not be fully secure.
+                  Do not share sensitive personal information in this chat. AI
+                  responses may not be fully secure.
                 </p>
                 <button
                   className="w-full mt-2 py-2 bg-white text-black text-sm rounded-full font-semibold"
@@ -203,12 +303,17 @@ export default function AiModel() {
             </div>
           )}
 
-          {/* Input bar */}
+          {/* INPUT BAR */}
           <div className="px-4 pb-4">
             <div className="bg-[#111] rounded-full px-4 py-3 flex items-center gap-3">
-              <button className="text-black rounded-full p-2 text-xl bg-white/20">
+              {/* NEW: Upload trigger */}
+              <button
+                className="text-black rounded-full p-2 text-xl bg-white/20"
+                onClick={() => fileInputRef.current.click()}
+              >
                 <Plus />
               </button>
+
               <input
                 type="text"
                 placeholder="Ask anything"
@@ -217,9 +322,11 @@ export default function AiModel() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               />
+
               <button className="text-white/80 rounded-full p-2 text-xl bg-white/20">
                 <Mic />
               </button>
+
               <button
                 onClick={sendMessage}
                 className="text-black rounded-full p-2 text-xl bg-white/20"
@@ -230,7 +337,8 @@ export default function AiModel() {
           </div>
 
           <span className="w-full text-center text-sm px-16 pb-4 text-white/50">
-            This AI may make mistakes. Please double-check important information.
+            This AI may make mistakes. Please double-check important
+            information.
           </span>
         </div>
       </div>
