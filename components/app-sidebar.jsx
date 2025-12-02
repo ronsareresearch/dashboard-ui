@@ -124,10 +124,10 @@ const data = {
           title: "Forms",
           url: "/dashboard/user-profile",
         },
-        // {
-        //   title: "User Actions",
-        //   url: "/dashboard/user-actions",
-        // },
+        {
+          title: "Vault",
+          url: "/dashboard/user-actions",
+        },
         // {
         //   title: "Activity Logs",
         //   url: "#",

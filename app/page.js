@@ -2,6 +2,8 @@
 import { LineChart, Line, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { TrendingUp, TrendingDown, MoreVertical, Download, Printer, HomeIcon , Mail, MessageSquare, Calendar, Square, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 
 const revenueData = [
@@ -81,6 +83,10 @@ const StatCard = ({ title, value, change, isPositive, chart }) => (
 );
 
 export default function Dashboard() {
+  const router = useRouter()
+  useEffect(() => {
+    router.push("/dashboard/email-inbox");
+  },[])
   const newCustomersChart = [
     { value: 30 }, { value: 45 }, { value: 35 }, { value: 50 }, { value: 40 }
   ];
