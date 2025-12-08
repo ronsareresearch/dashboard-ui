@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -12,169 +12,105 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarRail,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { Branding } from "./customs/branding/Branding"
+} from "@/components/ui/sidebar";
+import { Branding } from "./customs/branding/Branding";
+import { useAuthUser } from "@/app/lib/useAuthUser";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "Guru Accounting AI",
-    email: "support@guruaccounting.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
+// ✅ STATIC NAV CONFIG (NO PERMISSIONS HERE)
+const rawNav = {
   navMain: [
     {
       title: "Main",
-      url: "#",
       icon: SquareTerminal,
-      isActive: true,
+      permissionKey: "main",
       items: [
-        {
-          title: "Home",
-          url: "/dashboard/home",
-        },
-        {
-          title: "WhatsApp",
-          url: "/dashboard/whatsapp",
-        },
-        {
-          title: "Knowledge Base",
-          url: "/dashboard/knowledge-base",
-        },
+        { title: "Home", url: "/dashboard/home", key: "home" },
+        { title: "WhatsApp", url: "/dashboard/whatsapp", key: "whatsapp" },
+        { title: "Knowledge Base", url: "/dashboard/knowledge-base", key: "knowledge_base" },
       ],
     },
     {
       title: "Customer",
-      url: "#",
       icon: Bot,
+      permissionKey: "customer",
       items: [
-        //    {
-        //   title: "Business Insurance",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Tax Filing",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Accounting",
-        //   url: "#",
-        // },
-        {
-          title: "Immigration Services",
-          url: "/dashboard/immigration-services",
-        },
-
-        // {
-        //   title: "Payroll Management",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Financial Advisory",
-        //   url: "#",
-        // },
+        { title: "Immigration Services", url: "/dashboard/immigration-services", key: "immigration_services" },
       ],
     },
-     {
+    {
       title: "Emails",
-      url: "#",
       icon: Settings2,
+      permissionKey: "emails",
       items: [
-        {
-          title: "inbox",
-          url: "/dashboard/email-inbox",
-        },
+        { title: "Inbox", url: "/dashboard/email-inbox", key: "inbox" },
       ],
     },
     {
       title: "Documents",
-      url: "#",
       icon: BookOpen,
+      permissionKey: "documents",
       items: [
-        {
-          title: "Forms",
-          url: "/dashboard/user-profile",
-        },
-        {
-          title: "Vault",
-          url: "/dashboard/user-actions",
-        },
-        // {
-        //   title: "Activity Logs",
-        //   url: "#",
-        // },
+        { title: "Forms", url: "/dashboard/user-profile", key: "forms" },
+        { title: "Vault", url: "/dashboard/user-actions", key: "vault" },
+        { title: "Search", url: "/dashboard/search", key: "search" },
       ],
     },
-   
     {
       title: "User Management",
-      url: "#",
       icon: Settings2,
+      permissionKey: "user_management",
       items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-
+        { title: "General", url: "/dashboard/general", key: "general" },
+        { title: "Settings", url: "#", key: "settings" },
       ],
     },
   ],
+
   projects: [
-    {
-      name: "Docs",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Marketing Material",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Holidays",
-      url: "#",
-      icon: Map,
-    },
+    { name: "Docs", icon: Frame, key: "docs" },
+    { name: "Marketing Material", icon: PieChart, key: "marketing_material" },
+    { name: "Holidays", icon: Map, key: "holidays" },
   ],
-}
+};
 
-export function AppSidebar({
+// ✅ FILTER ENGINE
+const filterNav = (nav, permissions) =>
+  nav
+    .map((group) => {
+      const allowedItems = group.items.filter(
+        (item) => permissions?.[group.permissionKey]?.[item.key]
+      );
+      if (!allowedItems.length) return null;
+      return { ...group, items: allowedItems };
+    })
+    .filter(Boolean);
 
-  ...props
-}) {
+export function AppSidebar(props) {
+  const { user, loading } = useAuthUser();
+
+  const filteredNav = React.useMemo(() => {
+    if (!user?.permissions) return [];
+    return filterNav(rawNav.navMain, user.permissions);
+  }, [user]);
+
+  const filteredProjects = React.useMemo(() => {
+    if (!user?.permissions?.resources) return [];
+    return rawNav.projects.filter(
+      (proj) => user.permissions.resources?.[proj.key]
+    );
+  }, [user]);
+
+  if (loading) return null; // prevent flicker
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -182,14 +118,16 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={filteredNav} />
+        <NavProjects projects={filteredProjects} />
       </SidebarContent>
 
       <SidebarFooter>
         <div className="w-full text-center py-4 border-t border-gray-600 flex flex-col items-center space-y-1">
           <span className="text-gray-400 text-xs">© 2025 All rights reserved</span>
-          <span className="text-white/80 text-sm font-semibold">Developed by Ronsare</span>
+          <span className="text-white/80 text-sm font-semibold">
+            Developed by Ronsare
+          </span>
         </div>
       </SidebarFooter>
     </Sidebar>

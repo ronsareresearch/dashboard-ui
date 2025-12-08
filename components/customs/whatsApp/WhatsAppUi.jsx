@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FileText, User2 } from "lucide-react";
-import { API_BASE_URL, WS_URL } from "@/app/constant/constant";
+// import { API_BASE_URL, WS_URL } from "@/app/constant/constant";
 
-// const API_BASE_URL = "http://localhost:4000";
+const API_BASE_URL = "https://zzsn3hdk-4000.inc1.devtunnels.ms";
 // const API_BASE_URL = "https://chatapi.ronsare.site";
-// const WS_URL = "ws://localhost:4000/messages/ws";
+const WS_URL = "ws://zzsn3hdk-4000.inc1.devtunnels.ms";
 // const WS_URL = "wss://chatapi.ronsare.site/messages/ws";
 
 export default function WhatsAppUi() {

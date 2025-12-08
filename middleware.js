@@ -3,12 +3,15 @@ import { NextResponse } from "next/server";
 export function middleware(req) {
   const token = req.cookies.get("auth_token");
   const { pathname } = req.nextUrl;
-
+  
   // Define protected routes
   const protectedRoutes = [
     "/",                    // homepage
     "/dashboard/whatsapp", // your dashboard page
     "/dashboard/home",
+    "/dashboard/knowledge-base",
+    "/dashboard/email-inbox",
+    "/dashboard/general",
   ];
 
   const isProtected = protectedRoutes.some(
@@ -27,5 +30,8 @@ export const config = {
     "/",
     "/dashboard/whatsapp/:path*", // matches `/dashboard/whatsapp` and its children
     "/dashboard/home/:path*", // matches `/dashboard/whatsapp` and its children
+    "/dashboard/knowledge-base/:path*", // matches `/dashboard/whatsapp` and its children
+    "/dashboard/email-inbox/:path*", // matches `/dashboard/whatsapp` and its children
+    "/dashboard/general/:path*", // matches `/dashboard/whatsapp` and its children
   ],
 };

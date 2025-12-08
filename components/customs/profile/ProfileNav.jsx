@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover
 import { LogOut, UserIcon } from 'lucide-react'
 import React from 'react'
 
-const ProfileNav = () => {
+const ProfileNav = ({handleLogout}) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -43,7 +43,7 @@ const ProfileNav = () => {
         <Button
           variant="ghost"
           className="flex items-center justify-start gap-2 text-sm w-full text-red-600"
-          onClick={() => handleLogout()}
+          onClick={handleLogout}
         >
           <LogOut className="w-4 h-4" /> Logout
         </Button>

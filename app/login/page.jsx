@@ -27,7 +27,7 @@ export default function Login() {
 
   try {
     const res = await api.post(
-      `${API_BASE_URL}/auth/login`,
+      `${API_BASE_URL}/login`,
       {
         email: formData.email,
         password: formData.password,

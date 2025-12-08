@@ -1,338 +1,403 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { AI_MODEL_SERVER } from "@/app/constant/constant";
+import { User2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function GmailInbox() {
-  // ✅ FIX 1: Correct naming (this is BACKEND, not frontend)
-  const BACKEND_URL = "https://zzsn3hdk-4001.inc1.devtunnels.ms";
-  const API_BASE = `${BACKEND_URL}/api/v1`;
+    const EMAIL_SERVER_BACKEND_URL = "https://zzsn3hdk-4001.inc1.devtunnels.ms";
+    const API_BASE = `${EMAIL_SERVER_BACKEND_URL}/api/v1`;
 
-  const [emailAccounts, setEmailAccounts] = useState([]);
-  const [selectedEmail, setSelectedEmail] = useState(null);
-  const [emails, setEmails] = useState([]);
-  const [status, setStatus] = useState("Loading inbox…");
-  const [expandedEmail, setExpandedEmail] = useState(null);
-  const [emailDetails, setEmailDetails] = useState({});
-  const [loadingDetails, setLoadingDetails] = useState({});
-  const wsRef = useRef(null);
+    const [emailAccounts, setEmailAccounts] = useState([]);
+    const [selectedEmail, setSelectedEmail] = useState("");
+    const [emails, setEmails] = useState([]);
+    const [status, setStatus] = useState("Loading inbox…");
+    const [expandedEmail, setExpandedEmail] = useState(null);
+    const [emailDetails, setEmailDetails] = useState({});
+    const [loadingDetails, setLoadingDetails] = useState({});
+    const [page, setPage] = useState(1);
+    const [totalEmails, setTotalEmails] = useState(0);
+    const pageSize = 10;
 
-  const loadAccounts = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/accounts`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setEmailAccounts(data.accounts || []);
-      if (!selectedEmail && data.accounts?.length > 0) {
-        setSelectedEmail(data.accounts[0]);
-      }
-    } catch (err) {
-      console.error("Failed to load accounts:", err);
-    }
-  };
+    const [rightPanelOpen, setRightPanelOpen] = useState(false);
+    const [summaryData, setSummaryData] = useState(null);
+    const [replyTemplate, setReplyTemplate] = useState(null);
+    const [loadingAI, setLoadingAI] = useState(false);
+    const [replyText, setReplyText] = useState("");
+    console.log('emails__' , emails)
+    // Load user and accounts
+    const loadUserAndAccounts = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/me`, { credentials: "include" });
 
-  useEffect(() => {
-    loadAccounts();
-  }, []);
+            if (res.status === 401) {
+                setStatus("Not authenticated. Please login.");
+                return;
+            }
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const addedEmail = params.get("added_email");
-    if (addedEmail) {
-      setEmailAccounts((prev) =>
-        prev.includes(addedEmail) ? prev : [...prev, addedEmail]
-      );
-      setSelectedEmail(addedEmail);
-      window.history.replaceState({}, "", "/");
-    }
-  }, []);
+            const data = await res.json();
+            const accounts = data.google_accounts.map((acc) => acc.email);
 
-  useEffect(() => {
-    if (!selectedEmail) return;
-    let reconnectTimeout;
-
-    const loadInbox = async () => {
-      setStatus("Loading inbox…");
-      setEmails([]);
-      setExpandedEmail(null);
-      setEmailDetails({});
-
-      try {
-        // ✅ FIX 2: credentials included
-        const res = await fetch(
-          `${API_BASE}/inbox?email=${encodeURIComponent(selectedEmail)}`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-        setEmails(data.messages || []);
-        setStatus("Inbox loaded. Listening for new emails…");
-      } catch (err) {
-        console.error(err);
-        setStatus("Failed to load inbox");
-      }
-    };
-
-    const connectWS = () => {
-      if (wsRef.current) wsRef.current.close();
-
-      const WS_BASE = API_BASE.replace("http", "ws");
-      wsRef.current = new WebSocket(
-        `${WS_BASE}/ws?email=${encodeURIComponent(selectedEmail)}`
-      );
-
-      wsRef.current.onopen = () =>
-        setStatus("✅ Connected. Waiting for new emails…");
-wsRef.current.onmessage = (event) => {
-  try {
-    const data = JSON.parse(event.data);
-    console.log("🔌 WS Received:", data);  // DEBUG
-
-    if (data.type === "inbox_update" && data.email === selectedEmail) {
-      console.log("📨 Processing inbox_update for", selectedEmail);
-      
-      setEmails((prev) => {
-        const existingIds = new Set(prev.map((e) => e.id));
-        const newMessages = data.messages.filter((m) => !existingIds.has(m.id));
-        
-        console.log("📊 WS Update stats:", {
-          totalReceived: data.messages.length,
-          newMessages: newMessages.length,
-          existing: prev.length
-        });
-        
-        if (newMessages.length === 0) {
-          console.log("ℹ️ No new messages to add");
-          return prev;
+            setEmailAccounts(accounts);
+            if (!selectedEmail && accounts.length > 0) {
+                setSelectedEmail(accounts[0]);
+            }
+            setStatus("Inbox ready");
+        } catch (err) {
+            console.error(err);
+            setStatus("Error loading user info");
         }
-        
-        const updatedEmails = [...newMessages, ...prev];
-        console.log("✅ Added", newMessages.length, "new emails. Total:", updatedEmails.length);
-        return updatedEmails;
-      });
-
-      setStatus(`📩 ${data.messages.length} new email(s) received`);
-    }
-  } catch (e) {
-    console.error("❌ WS parse error:", e);
-  }
-};
-
-
-      wsRef.current.onclose = () => {
-        reconnectTimeout = setTimeout(connectWS, 3000);
-      };
     };
 
-    loadInbox();
-    connectWS();
+    // Load emails
+    const loadEmails = async (email, pageNum = 1) => {
+        if (!email) return;
+        setStatus("Loading inbox…");
 
-    return () => {
-      if (wsRef.current) wsRef.current.close();
-      clearTimeout(reconnectTimeout);
+        try {
+            const res = await fetch(
+                `${API_BASE}/emails?google_account_email=${encodeURIComponent(
+                    email
+                )}&page=${pageNum}&page_size=${pageSize}`,
+                { credentials: "include" }
+            );
+
+            const data = await res.json();
+            setEmails(data.emails || []);
+            setTotalEmails(data.pagination?.total || 0);
+            setStatus(`Inbox loaded. Page ${pageNum}`);
+        } catch (err) {
+            console.error(err);
+            setStatus("Failed to load inbox");
+        }
     };
-  }, [selectedEmail]);
 
-  const addEmail = () => {
-    window.location.href = `${API_BASE}/auth/google`;
-  };
+    useEffect(() => {
+        loadUserAndAccounts();
+    }, []);
 
-  // ✅ FIX 3: credentials added
-  const fetchEmailDetails = async (messageId) => {
-    if (emailDetails[messageId]) {
-      setExpandedEmail(expandedEmail === messageId ? null : messageId);
-      return;
+    useEffect(() => {
+        if (selectedEmail) {
+            loadEmails(selectedEmail, page);
+        }
+    }, [selectedEmail, page]);
+
+    const addEmail = () => {
+        window.location.href = `${API_BASE}/auth/google`;
+    };
+
+    // const refreshInbox = () => loadEmails(selectedEmail, page);
+
+    // Fetch Email Details// Fetch Email Details
+    const fetchEmailDetails = async (messageId) => {
+        setLoadingDetails((prev) => ({ ...prev, [messageId]: true }));
+
+        try {
+            const res = await fetch(`${API_BASE}/email/details/${messageId}`, {
+                credentials: "include",
+            });
+            const data = await res.json();
+
+            setEmailDetails((prev) => ({ ...prev, [messageId]: data }));
+            setExpandedEmail(messageId);
+
+            // Determine content source for AI
+            let fileUrl = data.attachments?.[0]?.storage_url || null;
+            let contextText = "";
+
+            if (fileUrl) {
+                // If attachment exists, we use fileUrl
+                fetchAISummary(fileUrl, null); // Pass fileUrl
+            } else {
+                // No attachment: use email content (body or snippet)
+                contextText =
+                    data.body?.text ||
+                    data.body?.html?.replace(/<[^>]+>/g, "") || // remove HTML tags if present
+                    data.snippet ||
+                    `${data.subject} from ${data.from_email}`;
+
+                fetchAISummary(null, contextText); // Pass context text
+            }
+
+            // Open Right panel at 50%
+            setRightPanelOpen(true);
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingDetails((prev) => ({ ...prev, [messageId]: false }));
+        }
+    };
+
+    // Fetch AI Summary & Generate Reply
+    // Accept either fileUrl OR contextText
+    const fetchAISummary = async (fileUrl = null, contextText = null) => {
+        setLoadingAI(true);
+
+        try {
+            let summary = "";
+
+            if (fileUrl) {
+                // 1️⃣ Call /summarize/url
+                const summarizeRes = await fetch(`${AI_MODEL_SERVER}/gemini/summarize/url`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ file_url: fileUrl }),
+                });
+                const summarizeData = await summarizeRes.json();
+                summary = summarizeData.summary;
+            } else if (contextText) {
+                // Use contextText directly as summary if no file
+                summary = contextText;
+            }
+
+            setSummaryData(summary);
+
+            // 2️⃣ Call /generate-response
+            const responseRes = await fetch(`${AI_MODEL_SERVER}/gemini/generate-response`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    summary,
+                    context: "Provide a professional email reply based on the summary",
+                }),
+            });
+            const responseData = await responseRes.json();
+            setReplyTemplate(responseData.reply_template || responseData.response || "");
+            setReplyText(responseData.reply_template || responseData.response || "");
+
+
+        } catch (err) {
+            console.error("AI summary/final response error:", err);
+            setSummaryData("Failed to generate summary.");
+            setReplyTemplate("");
+        } finally {
+            setLoadingAI(false);
+        }
+    };
+
+
+
+    const nextPage = () => {
+        if (page * pageSize < totalEmails) setPage((prev) => prev + 1);
+    };
+
+    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+
+    async function refreshInbox(email) {
+        const res = await fetch("http://localhost:4001/api/v1/email/sync-new", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "API Error");
+        }
+
+        return await res.json();
     }
 
-    setLoadingDetails((prev) => ({ ...prev, [messageId]: true }));
+    // ---------------------------
+    // UI
+    // ---------------------------
+    return (
+        <div className="h-screen w-full flex bg-gray-800 p-2">
 
-    try {
-      const res = await fetch(
-        `${API_BASE}/email/${messageId}?email=${encodeURIComponent(
-          selectedEmail
-        )}`,
-        { credentials: "include" }
-      );
+            {/* MAIN WRAPPER (Dynamic Split: 50% / 50%) */}
+            <div className={`flex bg-white rounded-3xl overflow-hidden w-full`}>
 
-      const data = await res.json();
-      setEmailDetails((prev) => ({ ...prev, [messageId]: data }));
-      setExpandedEmail(messageId);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingDetails((prev) => ({ ...prev, [messageId]: false }));
-    }
-  };
+                {/* LEFT SIDE - Inbox (50% if rightPanelOpen else 100%) */}
+                <div className={`${rightPanelOpen ? "w-[30%]" : "w-full"} h-screen flex flex-col transition-all duration-300`}>
 
-  const refreshInbox = () => setSelectedEmail((prev) => prev);
+                    {/* Header */}
+                    <div className="p-6 shrink-0">
+                        <h1 className="text-3xl font-bold">📨 Gmail Inbox</h1>
 
-  const getFileIcon = (mimeType) => {
-    if (!mimeType) return "📎";
-    if (mimeType.startsWith("image/")) return "🖼️";
-    if (mimeType.includes("pdf")) return "📄";
-    if (mimeType.includes("word")) return "📝";
-    if (mimeType.includes("excel")) return "📊";
-    if (mimeType.includes("zip")) return "📦";
-    return "📎";
-  };
+                        <div className="flex flex-wrap space-x-2 mt-4 gap-2">
+                            <select
+                                className="border p-2 rounded"
+                                value={selectedEmail || ""}
+                                onChange={(e) => {
+                                    setSelectedEmail(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                {emailAccounts.map((email) => (
+                                    <option key={email} value={email}>
+                                        {email}
+                                    </option>
+                                ))}
+                            </select>
 
-  const formatFileSize = (bytes) => {
-    if (!bytes) return "Unknown";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024)
-      return `${(bytes / 1024).toFixed(2)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  };
+                            {/* <button
+                                onClick={addEmail}
+                                className="px-3 py-1 bg-blue-600 text-white rounded"
+                            >
+                                Add Email
+                            </button> */}
 
-  // ✅ FIX 4: Attachment download with credentials flag
-  const downloadAttachment = (messageId, attachmentId, filename) => {
-    const url = `${API_BASE}/email/${messageId}/attachment/${attachmentId}?email=${encodeURIComponent(
-      selectedEmail
-    )}&withCredentials=true`;
+                            <button
+                                onClick={() => refreshInbox('freshertodayrecruiter@gmail.com')}
+                                className="px-3 py-1 bg-green-600 text-white rounded"
+                            >
+                                Refresh
+                            </button>
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "attachment";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
+                            <button
+                                onClick={prevPage}
+                                disabled={page === 1}
+                                className="px-3 py-1 bg-gray-300 text-black rounded disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
 
-  return (
-    <div className="h-screen w-full flex bg-gray-800 p-2">
-      <div className="rounded-3xl flex flex-col w-full bg-white overflow-hidden">
-        <div className="p-6 shrink-0">
-          <h1 className="text-3xl font-bold">📨 Gmail Inbox</h1>
+                            <button
+                                onClick={nextPage}
+                                disabled={page * pageSize >= totalEmails}
+                                className="px-3 py-1 bg-gray-300 text-black rounded disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
 
-          <div className="flex space-x-4 items-center mt-4">
-            <select
-              className="border p-2 rounded"
-              value={selectedEmail || ""}
-              onChange={(e) => setSelectedEmail(e.target.value)}
-            >
-              {emailAccounts.map((email) => (
-                <option key={email} value={email}>
-                  {email}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={addEmail}
-              className="px-3 py-1 bg-blue-600 text-white rounded"
-            >
-              Add Email
-            </button>
-
-            <button
-              onClick={refreshInbox}
-              className="px-3 py-1 bg-green-600 text-white rounded"
-            >
-              Refresh
-            </button>
-          </div>
-
-          <div className="text-gray-500 mt-2">{status}</div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {emails.length === 0 && (
-            <div className="p-4 border rounded text-gray-500 bg-white">
-              No emails yet.
-            </div>
-          )}
-
-          {emails.map((mail) => {
-            const details = emailDetails[mail.id];
-            const isExpanded = expandedEmail === mail.id;
-            const isLoading = loadingDetails[mail.id];
-
-            return (
-              <div key={mail.id} className="p-4 border rounded shadow bg-white">
-                <div
-                  className="cursor-pointer"
-                  onClick={() => fetchEmailDetails(mail.id)}
-                >
-                  <div className="font-semibold">
-                    {mail.subject || "(No Subject)"}
-                  </div>
-                  <div className="text-sm text-gray-600">{mail.from}</div>
-                  <div className="text-xs text-gray-400">{mail.date}</div>
-                  <p className="text-sm mt-2">{mail.snippet}</p>
-
-                  {isLoading && (
-                    <div className="text-sm text-blue-500 mt-2">
-                      Loading details…
+                        <div className="text-gray-500 mt-2">{status}</div>
                     </div>
-                  )}
+
+                    {/* Email List */}
+                    <div className="flex-1 overflow-y-auto py-6">
+                        {emails.length === 0 && (
+                            <div className="p-4 border rounded text-gray-500 bg-white">
+                                No emails yet.
+                            </div>
+                        )}
+
+                        {emails.map((mail) => {
+                            const details = emailDetails[mail.id];
+                            const isExpanded = expandedEmail === mail.id;
+                            const isLoading = loadingDetails[mail.id];
+
+                            return (
+                                <div key={mail.id} className="px-6 py-4 border-t border-gray-300 bg-white">
+                                    <div
+                                        className="cursor-pointer"
+                                        onClick={() => fetchEmailDetails(mail.id)}
+                                    >
+                                        <div className="font-semibold flex items-center justify-start gap-2">
+                                           <User2 /> {mail.subject || "(No Subject)"}
+                                        </div>
+                                        <div className="text-sm text-gray-600">{mail.from_email}</div>
+                                        <div className="text-xs text-gray-400">
+                                            {new Date(mail.created_at).toLocaleString()}
+                                        </div>
+                                        <p className="text-sm mt-2">{mail.snippet}</p>
+
+                                        {isLoading && (
+                                            <div className="text-sm text-blue-500 mt-2">
+                                                Loading details…
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {isExpanded && details && (
+                                        <div className="mt-4 pt-4 border-t space-y-4">
+                                            {/* Email Body */}
+                                            {details.body?.html ? (
+                                                <div
+                                                    dangerouslySetInnerHTML={{ __html: details.body.html }}
+                                                />
+                                            ) : details.body?.text ? (
+                                                <div className="whitespace-pre-wrap">
+                                                    {details.body.text}
+                                                </div>
+                                            ) : (
+                                                <div className="text-gray-500">No content</div>
+                                            )}
+
+                                            {/* Attachments */}
+                                            {details.attachments?.length > 0 && (
+                                                <div className="mt-4">
+                                                    <h4 className="font-semibold mb-2">📎 Attachments</h4>
+
+                                                    <ul className="space-y-2">
+                                                        {details.attachments.map((att) => (
+                                                            <li
+                                                                key={att.id}
+                                                                className="p-2 border rounded bg-gray-50 flex justify-between items-center"
+                                                            >
+                                                                <div>
+                                                                    <div className="font-medium">{att.filename}</div>
+                                                                    <div className="text-xs text-gray-500">
+                                                                        {att.mime_type} — {(att.size / 1024).toFixed(1)} KB
+                                                                    </div>
+                                                                </div>
+
+                                                                <a
+                                                                    href={att.storage_url}
+                                                                    target="_blank"
+                                                                    className="px-3 py-1 bg-blue-600 text-white rounded"
+                                                                >
+                                                                    Download
+                                                                </a>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                {isExpanded && details && (
-                  <div className="mt-4 pt-4 border-t">
-                    {details.body?.html ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: details.body.html,
-                        }}
-                      />
-                    ) : details.body?.text ? (
-                      <div className="whitespace-pre-wrap">
-                        {details.body.text}
-                      </div>
-                    ) : (
-                      <div className="text-gray-500">No content</div>
-                    )}
+                {/* RIGHT PANEL (50% width only after clicking an email) */}
+                {rightPanelOpen && (
+                    <div className="w-[70%] border-l bg-white h-screen p-4 flex flex-col shadow-xl transition-all duration-300">
 
-                    {details.attachments?.length > 0 && (
-                      <div className="mt-4">
-                        <h3 className="font-semibold mb-2">
-                          📎 Attachments ({details.attachments.length})
-                        </h3>
+                        <h2 className="text-xl font-bold mb-4">AI Assistant</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {details.attachments.map((att) => (
-                            <div
-                              key={att.attachmentId}
-                              className="p-3 border rounded hover:bg-gray-50 cursor-pointer"
-                              onClick={() =>
-                                downloadAttachment(
-                                  mail.id,
-                                  att.attachmentId,
-                                  att.filename
-                                )
-                              }
-                            >
-                              <div className="flex items-start space-x-2">
-                                <span className="text-2xl">
-                                  {getFileIcon(att.mimeType)}
-                                </span>
-                                <div>
-                                  <div className="font-medium truncate">
-                                    {att.filename}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {att.mimeType}
-                                  </div>
-                                  <div className="text-xs text-gray-400">
-                                    {formatFileSize(att.size)}
-                                  </div>
-                                </div>
-                              </div>
+                        {/* Top 50%: SUMMARY */}
+                        <div className="flex-1 border rounded-xl p-4 bg-gray-50 mb-2 overflow-y-auto">
+                            <h3 className="font-semibold text-lg mb-2">📝 Summary</h3>
 
-                              <div className="mt-2 text-xs text-blue-600">
-                                Click to download →
-                              </div>
-                            </div>
-                          ))}
+                            {loadingAI ? (
+                                <div className="text-blue-500">Generating summary…</div>
+                            ) : summaryData ? (
+                                <p className="text-gray-700 whitespace-pre-line">{summaryData}</p>
+                            ) : (
+                                <p className="text-gray-400">No summary available</p>
+                            )}
                         </div>
-                      </div>
-                    )}
-                  </div>
+
+                        {/* Bottom 50%: REPLY TEMPLATE */}
+                        <div className="flex-1 border rounded-xl p-4 bg-gray-50 overflow-y-auto">
+                            <h3 className="font-semibold text-lg mb-2">✉️ Reply</h3>
+
+                            {replyTemplate ? (
+                                <textarea
+                                    className="w-full h-full p-3 border rounded bg-white"
+                                    value={replyText}               // controlled component
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                />
+                            ) : (
+                                <p className="text-gray-400">No template available</p>
+                            )}
+
+                          <div className="flex items-center justify-end w-full">
+                              <button className="mt-3 bg-blue-600 text-white px-6 py-2 rounded-lg">
+                                Send Reply
+                            </button>
+                          </div>
+                        </div>
+                    </div>
                 )}
-              </div>
-            );
-          })}
+
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

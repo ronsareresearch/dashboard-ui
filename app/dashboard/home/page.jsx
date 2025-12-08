@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/app/constant/constant";
+import { AUTH_SERVER } from "@/app/constant/constant";
 import AiModel from "@/components/customs/ai-model-components/AiModel";
 import ProfileNav from "@/components/customs/profile/ProfileNav";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,7 @@ export default function HomePage() {
 
 const handleLogout = async () => {
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/logout`, {
+    const res = await fetch(`${AUTH_SERVER}/logout`, {
       method: "POST",
       credentials: "include", // Sends cookies
     });
@@ -100,7 +100,9 @@ const handleLogout = async () => {
         <h1 className="text-3xl font-bold py-2 flex items-center justify-start">
 
             Wellcome to Dashboard</h1>
- <ProfileNav />
+ <ProfileNav
+ handleLogout={handleLogout}
+ />
 
        </div>
       {/* MAIN */}
