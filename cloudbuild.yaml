@@ -1,0 +1,39 @@
+# cloudbuild.yaml for project buoyant-country-478717-a1
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t', 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA',
+        '.'
+      ]
+
+  # Step 2: Push Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA'
+      ]
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run', 'deploy', 'nextjs-app',
+        '--image', 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA',
+        '--region', 'us-central1',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--port', '3000'
+      ]
+
+substitutions:
+  _SERVICE_NAME: 'nextjs-app'
+
+timeout: '900s'
+
+images:
+  - 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA'
