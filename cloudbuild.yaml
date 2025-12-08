@@ -30,10 +30,17 @@ steps:
         '--port', '3000'
       ]
 
+# Optional substitution variables
 substitutions:
   _SERVICE_NAME: 'nextjs-app'
 
+# Timeout for the build
 timeout: '900s'
 
+# Images to store after build
 images:
   - 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA'
+
+# FIX: Use Cloud Logging for builds when using user-managed service account
+options:
+  logging: CLOUD_LOGGING_ONLY
