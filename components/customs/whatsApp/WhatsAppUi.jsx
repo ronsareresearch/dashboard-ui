@@ -4,13 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FileText, User2 } from "lucide-react";
 import { WHATSAPP_SERVER  , WS_URL} from "@/app/constant/constant";
-import { API_BASE_URL, WS_URL } from "@/app/constant/constant";
 
-// const API_BASE_URL = "https://zzsn3hdk-4000.inc1.devtunnels.ms";
-// const API_BASE_URL = "https://chatapi.ronsare.site";
-// const WS_URL = "ws://zzsn3hdk-4000.inc1.devtunnels.ms";
-// const WS_URL = "wss://chatapi.ronsare.site/messages/ws";
-
+//
 export default function WhatsAppUi() {
     const [users, setUsers] = useState([]);
     const [activeUser, setActiveUser] = useState(null);
@@ -49,7 +44,7 @@ export default function WhatsAppUi() {
     const fetchChat = async (sender) => {
         setIsLoading(true);
         try {
-            const res = await axios.get(`${API_BASE_URL}/messages/${sender}`,
+            const res = await axios.get(`${WHATSAPP_SERVER}/messages/${sender}`,
 
                 {
                     withCredentials: true,
