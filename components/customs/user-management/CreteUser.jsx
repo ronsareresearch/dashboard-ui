@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Mail, Lock, Plus, XCircle } from "lucide-react";
-import { AUTH_SERVER } from "@/app/constant/constant";
+import { AUTH_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
 
 const API_BASE_URL = AUTH_SERVER;
 
@@ -35,6 +35,7 @@ const CreateUser = ({ show, onClose, userData, editUser }) => {
   });
 
   const [loading, setLoading] = useState(false);
+const [externalEmailOptions, setExternalEmailOptions] = useState([]);
 
   // ✅ Autofill on edit
   useEffect(() => {
@@ -79,23 +80,24 @@ const CreateUser = ({ show, onClose, userData, editUser }) => {
       },
     }));
 
-  const addExternalEmail = () =>
-    setFormData((prev) => ({
-      ...prev,
-      external_emails: [...prev.external_emails, ""],
-    }));
+const handleExternalEmailChange = (index, value) => {
+  const updated = [...formData.external_emails];
+  updated[index] = value;
+  setFormData({ ...formData, external_emails: updated });
+};
 
-  const handleExternalEmailChange = (index, value) => {
-    const updated = [...formData.external_emails];
-    updated[index] = value;
-    setFormData((prev) => ({ ...prev, external_emails: updated }));
-  };
+const addExternalEmail = () => {
+  setFormData({
+    ...formData,
+    external_emails: [...formData.external_emails, ""],
+  });
+};
 
-  const removeExternalEmail = (index) => {
-    const updated = [...formData.external_emails];
-    updated.splice(index, 1);
-    setFormData((prev) => ({ ...prev, external_emails: updated }));
-  };
+const removeExternalEmail = (index) => {
+  const updated = formData.external_emails.filter((_, i) => i !== index);
+  setFormData({ ...formData, external_emails: updated });
+};
+
 
   // ✅ MAIN SUBMIT HANDLER
   const handleSubmit = async (e) => {
@@ -133,6 +135,27 @@ const CreateUser = ({ show, onClose, userData, editUser }) => {
     }
   };
 
+useEffect(() => {
+  const fetchExternalEmails = async () => {
+    try {
+      const res = await fetch(
+        `${EMAIL_SERVER}/get-external-emails`
+      );
+
+      const data = await res.json();
+
+      setExternalEmailOptions(data.external_emails || []);
+    } catch (err) {
+      console.error("Failed to load external emails:", err);
+    }
+  };
+
+  fetchExternalEmails();
+}, []);
+
+
+
+  console.log('userData' , userData)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -247,36 +270,48 @@ const CreateUser = ({ show, onClose, userData, editUser }) => {
           </div>
 
           {/* EXTERNAL EMAILS */}
-          <div>
-            <h4 className="font-semibold mb-2">External Emails</h4>
+        <div>
+  <h4 className="font-semibold mb-2">External Emails</h4>
 
-            {formData.external_emails.map((email, idx) => (
-              <div key={idx} className="flex gap-2 mb-2">
-                <input
-                  value={email}
-                  onChange={(e) =>
-                    handleExternalEmailChange(idx, e.target.value)
-                  }
-                  className="w-full border rounded px-3 py-2"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeExternalEmail(idx)}
-                  className="px-3 bg-red-600 text-white rounded"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+  {formData.external_emails.map((selectedEmail, idx) => (
+    <div key={idx} className="flex gap-2 mb-2">
+      
+      {/* ✅ DROPDOWN */}
+      <select
+        value={selectedEmail}
+        onChange={(e) =>
+          handleExternalEmailChange(idx, e.target.value)
+        }
+        className="w-full border rounded px-3 py-2"
+      >
+        <option value="">Select Email</option>
 
-            <button
-              type="button"
-              onClick={addExternalEmail}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              Add Email
-            </button>
-          </div>
+        {externalEmailOptions.map((email) => (
+          <option key={email} value={email}>
+            {email}
+          </option>
+        ))}
+      </select>
+
+      <button
+        type="button"
+        onClick={() => removeExternalEmail(idx)}
+        className="px-3 bg-red-600 text-white rounded"
+      >
+        Remove
+      </button>
+    </div>
+  ))}
+
+  <button
+    type="button"
+    onClick={addExternalEmail}
+    className="px-4 py-2 bg-blue-600 text-white rounded"
+  >
+    Add Email
+  </button>
+</div>
+
 
           {/* SUBMIT */}
           <div className="flex justify-end gap-3 pt-4 border-t">
