@@ -74,7 +74,7 @@ export default function AiModel() {
     try {
       let url =
         selectedModel === "Perplexity"
-          ? "http://localhost:4000/perplexity"
+          ? `${AI_MODEL_SERVER}/perplexity`
           : "http://localhost:4000/gemini";
 
       const res = await fetch(url, {

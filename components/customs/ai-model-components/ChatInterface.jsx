@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, ArrowUp, SearchIcon, User, Bot, Copy, RefreshCcw, ThumbsUp, ThumbsDown } from "lucide-react";
-import { API_BASE_URL } from "@/app/constant/constant";
+import { AI_MODEL_SERVER } from "@/app/constant/constant";
 
 export default function ChatInterface({ darkMode }) {
   const [msg, setMsg] = useState("");
@@ -49,14 +49,14 @@ export default function ChatInterface({ darkMode }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/gemini`, {
+      const res = await fetch(`${AI_MODEL_SERVER}/gemini/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userMsg.content }),
       });
 
       const data = await res.json();
-      const aiText = data.text || "No response";
+      const aiText = data.response || "No response";
 
       // REPLACE LOADING MESSAGE WITH REAL REPLY
       setMessages((prev) =>
