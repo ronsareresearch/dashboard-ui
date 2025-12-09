@@ -1,23 +1,17 @@
 steps:
-  # 1. Authenticate to Artifact Registry
+  # ✅ FIX 1: Authenticate Docker (MUST be first)
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['auth', 'configure-docker', 'us-central1-docker.pkg.dev']
   
-  # 2. Build
+  # Build (already works)
   - name: 'gcr.io/cloud-builders/docker'
-    args: 
-      - 'build'
-      - '-t'
-      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
-      - '.'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA', '.']
   
-  # 3. Push
+  # Push (will work NOW)
   - name: 'gcr.io/cloud-builders/docker'
-    args: 
-      - 'push'
-      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+    args: ['push', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA']
   
-  # 4. Deploy
+  # Deploy
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
