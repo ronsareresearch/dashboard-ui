@@ -3,11 +3,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FileText, User2 } from "lucide-react";
+import { WHATSAPP_SERVER  , WS_URL} from "@/app/constant/constant";
 // import { API_BASE_URL, WS_URL } from "@/app/constant/constant";
 
-const API_BASE_URL = "https://zzsn3hdk-4000.inc1.devtunnels.ms";
+// const API_BASE_URL = "https://zzsn3hdk-4000.inc1.devtunnels.ms";
 // const API_BASE_URL = "https://chatapi.ronsare.site";
-const WS_URL = "ws://zzsn3hdk-4000.inc1.devtunnels.ms";
+// const WS_URL = "ws://zzsn3hdk-4000.inc1.devtunnels.ms";
 // const WS_URL = "wss://chatapi.ronsare.site/messages/ws";
 
 export default function WhatsAppUi() {
@@ -30,7 +31,7 @@ export default function WhatsAppUi() {
 
  const fetchUsers = async () => {
     try {
-        const res = await axios.get(`${API_BASE_URL}/messages/users`, {
+        const res = await axios.get(`${WHATSAPP_SERVER}/messages/users`, {
             withCredentials: true,
         });
 
@@ -247,7 +248,7 @@ export default function WhatsAppUi() {
         setMessages((prev) => [...prev, localMsg]);
 
         try {
-            await axios.post(`${API_BASE_URL}/messages/send`, {
+            await axios.post(`${WHATSAPP_SERVER}/messages/send`, {
                 receiver: activeUser,
                 message: messageText,
             },

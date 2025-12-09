@@ -7,3 +7,4 @@ export const API_BASE_URL = "https://auth.ronsare.site/api/v1";
 export const WS_URL = "wss://whatsapp.ronsare.site/messages/ws";
 export const AI_MODEL_SERVER = "https://ai.ronsare.site/api/v1";
 export const AUTH_SERVER = "https://auth.ronsare.site/api/v1";
+export const WHATSAPP_SERVER = "https://whatsapp.ronsare.site/api/v1";
