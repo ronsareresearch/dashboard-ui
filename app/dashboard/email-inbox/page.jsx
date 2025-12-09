@@ -1,6 +1,7 @@
 "use client";
 
 import { AI_MODEL_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
+import { useAuthUser } from "@/app/lib/useAuthUser";
 import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -22,7 +23,9 @@ export default function GmailInbox() {
     const [replyTemplate, setReplyTemplate] = useState(null);
     const [loadingAI, setLoadingAI] = useState(false);
     const [replyText, setReplyText] = useState("");
-    console.log('emails__' , emails)
+      const { user, loading } = useAuthUser();
+    
+    console.log('emails__' , user)
     // Load user and accounts
     const loadUserAndAccounts = async () => {
         try {
@@ -35,7 +38,8 @@ export default function GmailInbox() {
 
             const data = await res.json();
             const accounts = data.google_accounts.map((acc) => acc.email);
-
+            console.log('ac' , accounts)
+            console.log('ac' , data)
             setEmailAccounts(accounts);
             if (!selectedEmail && accounts.length > 0) {
                 setSelectedEmail(accounts[0]);
@@ -224,7 +228,7 @@ export default function GmailInbox() {
                                     setPage(1);
                                 }}
                             >
-                                {emailAccounts.map((email) => (
+                                {user && user.external_emails.map((email) => (
                                     <option key={email} value={email}>
                                         {email}
                                     </option>
