@@ -1,30 +1,21 @@
 steps:
-  # Build Image
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/buoyant-country-478717-a1/dashboard-ui:$SHORT_SHA'
-      - '.'
-
-  # Push Image
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA', '.']
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/buoyant-country-478717-a1/dashboard-ui:$SHORT_SHA'
-
-  # Deploy to Cloud Run
+    args: ['push', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: bash
+    entrypoint: 'gcloud'
     args:
-      - -c
-      - |
-        gcloud run deploy dashboard-ui \
-          --image gcr.io/buoyant-country-478717-a1/dashboard-ui:$SHORT_SHA \
-          --region asia-south1 \
-          --platform managed \
-          --project buoyant-country-478717-a1 \
-          --allow-unauthenticated \
-          --set-env-vars PORT=3000
+      - 'run'
+      - 'deploy'
+      - 'guru-dashboard'
+      - '--image=us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=3000'
+      - '--memory=1Gi'
+      - '--cpu=1'
 
-timeout: "1200s"
+images:
+  - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
