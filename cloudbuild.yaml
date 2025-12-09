@@ -1,8 +1,23 @@
 steps:
+  # 1. Authenticate to Artifact Registry
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['auth', 'configure-docker', 'us-central1-docker.pkg.dev']
+  
+  # 2. Build
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA', '.']
+    args: 
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+      - '.'
+  
+  # 3. Push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA']
+    args: 
+      - 'push'
+      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+  
+  # 4. Deploy
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
