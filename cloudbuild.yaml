@@ -1,15 +1,21 @@
 steps:
-  # ✅ FIX 1: Authenticate Docker (MUST be first)
+  # Authenticate Docker
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['auth', 'configure-docker', 'us-central1-docker.pkg.dev']
   
-  # Build (already works)
+  # Build to YOUR guru-dashboard repo
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA', '.']
+    args: 
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
+      - '.'
   
-  # Push (will work NOW)
+  # Push to YOUR guru-dashboard repo
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA']
+    args: 
+      - 'push'
+      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
   
   # Deploy
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -18,7 +24,7 @@ steps:
       - 'run'
       - 'deploy'
       - 'guru-dashboard'
-      - '--image=us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+      - '--image=us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
       - '--region=us-central1'
       - '--platform=managed'
       - '--allow-unauthenticated'
@@ -27,7 +33,7 @@ steps:
       - '--cpu=1'
 
 images:
-  - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+  - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
