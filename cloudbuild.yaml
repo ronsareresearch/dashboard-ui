@@ -1,46 +1,27 @@
-# cloudbuild.yaml for project buoyant-country-478717-a1
 steps:
-  # Step 1: Build Docker image
+  # Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      [
-        'build',
-        '-t', 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA',
-        '.'
-      ]
+    args: ['build', '-t', 'gcr.io/buoyant-country-478717-a1/dashboard-ui', '.']
 
-  # Step 2: Push Docker image to Container Registry
+  # Push Docker image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      [
-        'push',
-        'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA'
-      ]
+    args: ['push', 'gcr.io/buoyant-country-478717-a1/dashboard-ui']
 
-  # Step 3: Deploy to Cloud Run
+  # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       [
-        'run', 'deploy', 'nextjs-app',
-        '--image', 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA',
-        '--region', 'us-central1',
+        'run', 'deploy', 'dashboard-ui',
+        '--image', 'gcr.io/buoyant-country-478717-a1/dashboard-ui',
+        '--region', 'asia-south1',
         '--platform', 'managed',
         '--allow-unauthenticated',
         '--port', '3000'
       ]
 
-# Optional substitution variables
-substitutions:
-  _SERVICE_NAME: 'nextjs-app'
-
-# Timeout for the build
-timeout: '900s'
-
-# Images to store after build
 images:
-  - 'gcr.io/buoyant-country-478717-a1/nextjs-app:$SHORT_SHA'
+  - gcr.io/buoyant-country-478717-a1/dashboard-ui
 
-# FIX: Use Cloud Logging for builds when using user-managed service account
 options:
   logging: CLOUD_LOGGING_ONLY

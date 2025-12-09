@@ -1,13 +1,12 @@
-version: "3.9"
+version: '3.9'
 
 services:
-  nextjs:
+  dashboard-ui:
     build: .
-    container_name: nextjs_app
-    restart: always
+    container_name: dashboard-ui
     ports:
       - "3000:3000"
-    env_file:
-      - .env         # Your Next.js environment variables
-    volumes:
-      - .:/app       # Optional: live reload when developing
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: always
