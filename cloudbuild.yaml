@@ -19,3 +19,6 @@ steps:
 
 images:
   - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/frontend-repo/guru-dashboard:$SHORT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
