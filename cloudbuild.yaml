@@ -1,27 +1,30 @@
 steps:
   # Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/buoyant-country-478717-a1/dashboard-ui', '.']
+    args: [
+      'build',
+      '-t', 'asia-south1-docker.pkg.dev/buoyant-country-478717-a1/dashboard-ui:latest',
+      '.'
+    ]
 
-  # Push Docker image to Google Container Registry
+  # Push Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/buoyant-country-478717-a1/dashboard-ui']
+    args: [
+      'push',
+      'asia-south1-docker.pkg.dev/buoyant-country-478717-a1/dashboard-ui:latest'
+    ]
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
-    args:
-      [
-        'run', 'deploy', 'dashboard-ui',
-        '--image', 'gcr.io/buoyant-country-478717-a1/dashboard-ui',
-        '--region', 'asia-south1',
-        '--platform', 'managed',
-        '--allow-unauthenticated',
-        '--port', '3000'
-      ]
+    args: [
+      'run', 'deploy', 'dashboard-ui',
+      '--image', 'asia-south1-docker.pkg.dev/buoyant-country-478717-a1/dashboard-ui:latest',
+      '--region', 'asia-south1',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '3000'
+    ]
 
 images:
-  - gcr.io/buoyant-country-478717-a1/dashboard-ui
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  - 'asia-south1-docker.pkg.dev/buoyant-country-478717-a1/dashboard-ui:latest'

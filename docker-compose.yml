@@ -1,8 +1,10 @@
-version: '3.9'
+version: "3.9"
 
 services:
   dashboard-ui:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: dashboard-ui
     ports:
       - "3000:3000"
