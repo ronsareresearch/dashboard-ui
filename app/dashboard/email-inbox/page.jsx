@@ -1,12 +1,10 @@
 "use client";
 
-import { AI_MODEL_SERVER } from "@/app/constant/constant";
+import { AI_MODEL_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
 import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function GmailInbox() {
-    const EMAIL_SERVER_BACKEND_URL = "https://zzsn3hdk-4001.inc1.devtunnels.ms";
-    const API_BASE = `${EMAIL_SERVER_BACKEND_URL}/api/v1`;
 
     const [emailAccounts, setEmailAccounts] = useState([]);
     const [selectedEmail, setSelectedEmail] = useState("");
@@ -28,7 +26,7 @@ export default function GmailInbox() {
     // Load user and accounts
     const loadUserAndAccounts = async () => {
         try {
-            const res = await fetch(`${API_BASE}/me`, { credentials: "include" });
+            const res = await fetch(`${EMAIL_SERVER}/me`, { credentials: "include" });
 
             if (res.status === 401) {
                 setStatus("Not authenticated. Please login.");
@@ -56,7 +54,7 @@ export default function GmailInbox() {
 
         try {
             const res = await fetch(
-                `${API_BASE}/emails?google_account_email=${encodeURIComponent(
+                `${EMAIL_SERVER}/emails?google_account_email=${encodeURIComponent(
                     email
                 )}&page=${pageNum}&page_size=${pageSize}`,
                 { credentials: "include" }
@@ -83,7 +81,7 @@ export default function GmailInbox() {
     }, [selectedEmail, page]);
 
     const addEmail = () => {
-        window.location.href = `${API_BASE}/auth/google`;
+        window.location.href = `${EMAIL_SERVER}/auth/google`;
     };
 
     // const refreshInbox = () => loadEmails(selectedEmail, page);
@@ -93,7 +91,7 @@ export default function GmailInbox() {
         setLoadingDetails((prev) => ({ ...prev, [messageId]: true }));
 
         try {
-            const res = await fetch(`${API_BASE}/email/details/${messageId}`, {
+            const res = await fetch(`${EMAIL_SERVER}/email/details/${messageId}`, {
                 credentials: "include",
             });
             const data = await res.json();
@@ -185,7 +183,7 @@ export default function GmailInbox() {
     const prevPage = () => setPage((prev) => Math.max(prev - 1, 1));
 
     async function refreshInbox(email) {
-        const res = await fetch("http://localhost:4001/api/v1/email/sync-new", {
+        const res = await fetch(`${EMAIL_SERVER}/email/sync-new`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
