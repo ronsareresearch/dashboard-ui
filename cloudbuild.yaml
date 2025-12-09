@@ -1,30 +1,26 @@
 steps:
-  # Authenticate Docker
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['auth', 'configure-docker', 'us-central1-docker.pkg.dev']
-  
-  # Build to YOUR guru-dashboard repo
+  # Build image
   - name: 'gcr.io/cloud-builders/docker'
     args: 
       - 'build'
       - '-t'
-      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
+      - 'gcr.io/buoyant-country-478717-a1/guru-dashboard'
       - '.'
   
-  # Push to YOUR guru-dashboard repo
+  # Push to Container Registry (ALWAYS works)
   - name: 'gcr.io/cloud-builders/docker'
     args: 
       - 'push'
-      - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
+      - 'gcr.io/buoyant-country-478717-a1/guru-dashboard'
   
-  # Deploy
+  # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
       - 'guru-dashboard'
-      - '--image=us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
+      - '--image=gcr.io/buoyant-country-478717-a1/guru-dashboard'
       - '--region=us-central1'
       - '--platform=managed'
       - '--allow-unauthenticated'
@@ -33,7 +29,7 @@ steps:
       - '--cpu=1'
 
 images:
-  - 'us-central1-docker.pkg.dev/buoyant-country-478717-a1/guru-dashboard/guru-dashboard:$SHORT_SHA'
+  - 'gcr.io/buoyant-country-478717-a1/guru-dashboard'
 
 options:
   logging: CLOUD_LOGGING_ONLY
