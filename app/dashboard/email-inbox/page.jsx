@@ -269,12 +269,12 @@ const wsRef = useRef(null);
                                 ))}
                             </select>
 
-                            <button
+                            {/* <button
                                 onClick={addEmail}
                                 className="px-3 py-1 bg-blue-600 text-white rounded"
                             >
                                 Add Email
-                            </button>
+                            </button> */}
 
                             <button
                                 onClick={() => refreshInbox('freshertodayrecruiter@gmail.com')}
