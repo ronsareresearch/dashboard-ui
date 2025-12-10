@@ -2,22 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AUTH_SERVER } from "@/app/constant/constant";
+import { AUTH_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
 import {
   Search,
   Plus,
   Edit,
   User,
   Shield,
-  Lock,
   Mail,
   CheckCircle,
   XCircle,
   AlertCircle,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  List
 } from "lucide-react";
 import CreteUser from "./CreteUser";
+import ShowExternalEmails from "./ShowExternalEmails";
 
 const API_BASE_URL = AUTH_SERVER;
 
@@ -42,6 +44,7 @@ const UserProfile = () => {
     permissions: {},
     external_emails: [],
   });
+  const [isGmailList, setIsGmailList] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -128,6 +131,11 @@ const UserProfile = () => {
     }
   };
 
+      const addEmail = () => {
+        window.location.href = `${EMAIL_SERVER}/auth/google`;
+    };
+    
+
   return (
     <div className="min-h-screen w-full bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-8">
       {/* Header */}
@@ -137,7 +145,7 @@ const UserProfile = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -188,6 +196,37 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
+        <button
+          className="relative flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg bg-yellow-100/50 border border-gray-300 hover:shadow-md hover:bg-gray-50 transition-all text-gray-900 text-sm font-bold"
+          onClick={() => addEmail()}
+        >
+          {/* Google Icon */}
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 533.5 544.3"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M533.5 278.4c0-17.6-1.6-34.5-4.7-51H272v96.6h146.9c-6.3 33.7-25.1 62.3-53.6 81.5v67.6h86.7c50.6-46.6 79.5-115.2 79.5-194.7z" fill="#4285F4"/>
+            <path d="M272 544.3c72.6 0 133.6-24.1 178.1-65.6l-86.7-67.6c-24.1 16.2-55 25.8-91.4 25.8-70 0-129.4-47.2-150.6-110.3H33.5v69.3c44.2 87 134.7 148.4 238.5 148.4z" fill="#34A853"/>
+            <path d="M121.5 320.6c-10.3-30.9-10.3-64.8 0-95.7v-69.3H33.5c-40.5 79-40.5 173.4 0 252.4l88-87.4z" fill="#FBBC05"/>
+            <path d="M272 107.5c37.6-.6 71.2 13 97.6 38.2l73-73C405.1 24.1 344.1 0 272 0 168.2 0 77.7 61.4 33.5 148.4l88 69.3C142.6 154.7 202 107.5 272 107.5z" fill="#EA4335"/>
+          </svg>
+
+          Add Gmail
+
+          {/* Eye / List Icon in Top-Right */}
+          <span
+            className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Prevents triggering addEmail
+              setIsGmailList(true);
+            }}
+          >
+            <List className="w-3.5 h-3.5" />
+          </span>
+        </button>
+
+
       </div>
 
       {/* Controls */}
@@ -234,6 +273,7 @@ const UserProfile = () => {
 
             <button
               onClick={fetchUsers}
+              
               className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
@@ -360,6 +400,15 @@ const UserProfile = () => {
           userData={formData}
         />
       )}
+
+      {
+        isGmailList && (
+          <ShowExternalEmails
+          setIsGmailList={setIsGmailList}
+          />
+        )
+      }
+
     </div>
   );
 };

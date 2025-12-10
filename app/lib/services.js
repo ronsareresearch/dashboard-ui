@@ -1,0 +1,7 @@
+export const SERVICES = {
+  AUTH: process.env.NEXT_PUBLIC_AUTH_SERVER,
+  EMAIL: process.env.NEXT_PUBLIC_EMAIL_SERVER,
+  WHATSAPP: process.env.NEXT_PUBLIC_WHATSAPP_SERVER,
+  AI: process.env.NEXT_PUBLIC_AI_MODEL_SERVER,
+  API: process.env.NEXT_PUBLIC_API_BASE_URL,
+};

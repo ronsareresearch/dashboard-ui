@@ -2,7 +2,7 @@
 
 import { AI_MODEL_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
 import { User2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function GmailInbox() {
 
@@ -199,6 +199,44 @@ export default function GmailInbox() {
         return await res.json();
     }
 
+
+const wsRef = useRef(null);
+
+    useEffect(() => {
+        if (!selectedEmail) return;
+
+        const WS_URL = `${EMAIL_SERVER.replace(/^https?/, 'wss')}/ws`;
+        console.log("Connecting WS to:", WS_URL);
+
+        wsRef.current = new WebSocket(`${WS_URL}?email=${selectedEmail}`);
+
+        wsRef.current.onopen = () => console.log("🟢 WS Connected");
+        wsRef.current.onclose = () => console.log("🔴 WS Disconnected");
+        wsRef.current.onerror = (err) => console.error("⚠️ WS Error:", err);
+
+        wsRef.current.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+
+                if (data.type === "inbox_update" && data.email === selectedEmail) {
+                    setEmails((prev) => {
+                        const existingIds = new Set(prev.map((e) => e.id));
+                        const newEmails = data.messages
+                            .filter((m) => !existingIds.has(m.id))
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
+                        return [...newEmails, ...prev]; // prepend newest emails
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to parse WS message:", err);
+            }
+        };
+
+        return () => wsRef.current?.close();
+    }, [selectedEmail]);
+
+
+
     // ---------------------------
     // UI
     // ---------------------------
@@ -231,12 +269,12 @@ export default function GmailInbox() {
                                 ))}
                             </select>
 
-                            {/* <button
+                            <button
                                 onClick={addEmail}
                                 className="px-3 py-1 bg-blue-600 text-white rounded"
                             >
                                 Add Email
-                            </button> */}
+                            </button>
 
                             <button
                                 onClick={() => refreshInbox('freshertodayrecruiter@gmail.com')}
