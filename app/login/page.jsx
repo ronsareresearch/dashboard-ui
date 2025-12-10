@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import axios from "axios"
+// import axios from "axios"
 import { Mail, Lock, Eye, EyeOff, Loader2, Sparkles } from "lucide-react"
-import Link from "next/link"
+// import Link from "next/link"
 import { API_BASE_URL } from "../constant/constant"
-import api from "../utils/axiosInstance"
+import { authApi } from "@/app/lib/apis";
 
 export default function Login() {
   const router = useRouter()
@@ -26,15 +26,12 @@ export default function Login() {
   setError("");
 
   try {
-    const res = await api.post(
+    const res = await authApi.post(
       `${API_BASE_URL}/login`,
       {
         email: formData.email,
         password: formData.password,
       },
-      {
-        withCredentials: true, // VERY IMPORTANT (allows cookies)
-      }
     );
 
     if (res.data?.success || res.status === 200) {
