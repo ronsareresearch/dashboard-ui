@@ -149,51 +149,24 @@ const sendMessage = async () => {
     const messageText = input.trim();
     setInput("");
 
-    // Optimistic message
-    const localMsg = {
-        id: `temp-${Date.now()}`,
-        sender: "system",
-        receiver: activeUser,
-        text_body: messageText,
-        direction: "outgoing",
-        timestamp: Date.now(), // milliseconds
-        message_type: "text",
-    };
-
-    setMessages((prev) => [...prev, localMsg]);
-
     try {
-        const res = await axios.post(
+        // ❗ Do NOT add message to UI here.
+        // Webhook → WebSocket will deliver the real message.
+
+        await axios.post(
             `${WHATSAPP_SERVER}/messages/send`,
             { receiver: activeUser, message: messageText },
             { withCredentials: true }
         );
 
-        const serverMsg = res.data.message || {};
-
-        // Normalize timestamp: created_at → milliseconds
-        const normalizedMsg = {
-            ...serverMsg,
-            direction: serverMsg.direction === "in" ? "incoming" : "outgoing",
-            timestamp: serverMsg.created_at
-                ? new Date(serverMsg.created_at).getTime()
-                : Date.now(),
-            id: serverMsg.id || serverMsg.message_id || `msg-${Date.now()}-${Math.random()}`,
-            message_type: serverMsg.message_type || "text",
-            text_body: serverMsg.text_body || messageText,
-        };
-
-        // Replace optimistic message with normalized server message
-        setMessages((prev) =>
-            prev.map((m) => (m.id === localMsg.id ? normalizedMsg : m))
-        );
+        // NOTHING ELSE HERE.
+        // No setMessages, no temporary message, nothing.
     } catch (error) {
         console.error("Error sending message:", error);
-        // Remove optimistic message if sending fails
-        setMessages((prev) => prev.filter((m) => m.id !== localMsg.id));
         alert("Failed to send message. Please try again.");
     }
 };
+
 
 
 
