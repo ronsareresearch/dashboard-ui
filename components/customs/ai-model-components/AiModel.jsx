@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cleanAiText } from "@/app/utils/cleanAiText/cleanAiText";
+import { AI_MODEL_SERVER } from "@/app/constant/constant";
 
 export default function AiModel() {
   const [selectedModel, setSelectedModel] = useState("Gemini");
@@ -25,7 +26,9 @@ export default function AiModel() {
   const [showPromo, setShowPromo] = useState(true);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-
+const [isRecording, setIsRecording] = useState(false);
+let mediaRecorder;
+let audioChunks = [];
   // 🔥 NEW: Image upload ref
   const fileInputRef = useRef(null);
 
@@ -70,21 +73,25 @@ export default function AiModel() {
 
     setMessages((prev) => [...prev, loadingMsg]);
     setLoading(true);
-
+    console.log('selectedModel' , selectedModel)
     try {
+
       let url =
         selectedModel === "Perplexity"
-          ? `${AI_MODEL_SERVER}/perplexity`
-          : "http://localhost:4000/gemini";
+          ? `${AI_MODEL_SERVER}/perplexity/query`
+          : `${AI_MODEL_SERVER}/gemini/query`;
 
-      const res = await fetch(url, {
+          console.log('url' , url)
+
+
+          const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userMsg.text }),
       });
 
       const data = await res.json();
-      let aiText = data.text || data.error || "Something went wrong.";
+      let aiText = data.response || data.error || "Something went wrong.";
       aiText = cleanAiText(aiText);
 
       setMessages((prev) =>
@@ -95,6 +102,7 @@ export default function AiModel() {
         )
       );
     } catch (error) {
+      console.warn(error)
       setMessages((prev) =>
         prev.map((msg) =>
           msg.loading
@@ -141,7 +149,7 @@ const handleUpload = async (e) => {
     // 👇 IMPORTANT CHANGE:
     // Perplexity DOES NOT SUPPORT images.
     // So we always send images/PDF to GEMINI endpoint.
-    const url = "http://localhost:4000/gemini/image";
+    const url = `${AI_MODEL_SERVER}/gemini/media`;
 
     const res = await fetch(url, {
       method: "POST",
@@ -168,6 +176,95 @@ const handleUpload = async (e) => {
               text: "Image/PDF analysis failed.",
               model: selectedModel,
             }
+          : msg
+      )
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+const mediaRecorderRef = useRef(null);
+const audioChunksRef = useRef([]);
+
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const recorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = recorder; // SAVE HERE
+
+    recorder.ondataavailable = (event) => {
+      audioChunksRef.current.push(event.data);
+    };
+
+    recorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      audioChunksRef.current = []; // reset
+      await uploadAudio(audioBlob);
+    };
+
+    recorder.start();
+    setIsRecording(true);
+
+  } catch (err) {
+    console.error("Mic error:", err);
+  }
+};
+
+const stopRecording = () => {
+  if (mediaRecorderRef.current) {
+    mediaRecorderRef.current.stop();   // NOW THIS WORKS
+    setIsRecording(false);
+  }
+};
+
+const uploadAudio = async (audioBlob) => {
+  // 1️⃣ User audio message
+  const userMsg = { role: "user", text: "🎤 Audio message" };
+  setMessages((prev) => [...prev, userMsg]);
+
+  // 2️⃣ AI typing message
+  const loadingMsg = {
+    role: "ai",
+    text: selectedModel + " is typing...",
+    model: selectedModel,
+    loading: true,
+  };
+
+  setMessages((prev) => [...prev, loadingMsg]);
+  setLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "audio.webm");
+
+    const res = await fetch(`${AI_MODEL_SERVER}/gemini/media`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    let aiText = data.analysis || data.text || data.error || "Something went wrong.";
+
+    // 3️⃣ Replace the loading message with final response
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.loading
+          ? { role: "ai", text: aiText, model: selectedModel }
+          : msg
+      )
+    );
+  } catch (error) {
+    console.error("Audio upload error:", error);
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.loading
+          ? { role: "ai", text: "Server error.", model: selectedModel }
           : msg
       )
     );
@@ -322,11 +419,24 @@ const handleUpload = async (e) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               />
-
-              <button className="text-white/80 rounded-full p-2 text-xl bg-white/20">
-                <Mic />
+              <button
+                onClick={() => {
+                  if (isRecording) stopRecording();
+                  else startRecording();
+                }}
+                className={
+                  `rounded-full p-2 transition-all duration-300
+                  ${isRecording 
+                      ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/40" 
+                      : "bg-white/20 text-white/80"}`
+                }
+              >
+                {isRecording ? (
+                  <div className="w-6 h-6 bg-white rounded-sm"></div>  // stop icon
+                ) : (
+                  <Mic className="text-white/90 w-6 h-6" />
+                )}
               </button>
-
               <button
                 onClick={sendMessage}
                 className="text-black rounded-full p-2 text-xl bg-white/20"

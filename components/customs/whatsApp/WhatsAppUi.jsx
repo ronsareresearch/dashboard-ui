@@ -14,7 +14,6 @@ export default function WhatsAppUi() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [wsConnected, setWsConnected] = useState(false);
-    console.log('messages', messages)
     const messagesEndRef = useRef(null);
     const wsRef = useRef(null);
     const activeUserRef = useRef(null);
@@ -56,7 +55,6 @@ export default function WhatsAppUi() {
                 direction: m.direction === "in" ? "incoming" : "outgoing",
                 timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now(),
             }));
-
             setMessages(fixed);
             setActiveUser(sender);
             activeUserRef.current = sender;
@@ -67,153 +65,74 @@ export default function WhatsAppUi() {
         }
     };
 
-    // WebSocket connection for real-time updates
-    useEffect(() => {
-        let reconnectAttempts = 0;
-        const maxReconnectAttempts = 5;
-        let reconnectTimeout = null;
+useEffect(() => {
+    if (!activeUser) return;
 
-        const connectWebSocket = () => {
-            try {
-                const ws = new WebSocket(WS_URL);
-                wsRef.current = ws;
+    const WS_URL = `${WHATSAPP_SERVER.replace(/^https?/, 'wss')}/messages/ws`;
+    console.log("Connecting WS to:", WS_URL);
 
-                ws.onopen = () => {
-                    console.log("✅ WebSocket connected");
-                    setWsConnected(true);
-                    reconnectAttempts = 0;
+    wsRef.current = new WebSocket(`${WS_URL}?user=${activeUser}`);
+
+    wsRef.current.onopen = () => {
+        console.log("🟢 WS Connected");
+        setWsConnected(true);
+    };
+
+    wsRef.current.onclose = () => {
+        console.log("🔴 WS Disconnected");
+        setWsConnected(false);
+    };
+
+    wsRef.current.onerror = (err) => {
+        console.error("⚠️ WS Error:", err);
+        setWsConnected(false);
+    };
+
+    wsRef.current.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "new_message") {
+                const msg = data.message;
+
+                const formattedMessage = {
+                    ...msg,
+                    direction: msg.direction === "in" ? "incoming" : "outgoing",
+                    timestamp: msg.created_at ? new Date(msg.created_at).getTime() : Date.now(),
+                    id: msg.id || msg.message_id || `msg-${Date.now()}-${Math.random()}`,
+                    message_type: msg.message_type || "text",
+                    text_body: msg.text_body || "",
                 };
 
-                ws.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-
-                        if (data.type === "new_message") {
-                            const newMessage = data.message;
-                            console.log("📨 Received new message via WebSocket:", newMessage);
-
-                            // Update users list if it's a new sender (incoming message)
-                            if (newMessage.direction === "in" && newMessage.sender && newMessage.sender !== "system") {
-                                setUsers((prev) => {
-                                    if (!prev.includes(newMessage.sender)) {
-                                        console.log("➕ Adding new user to list:", newMessage.sender);
-                                        return [...prev, newMessage.sender];
-                                    }
-                                    return prev;
-                                });
-                            }
-
-                            // Get current activeUser from ref
-                            const currentActiveUser = activeUserRef.current;
-
-                            // Check if message is for the active user
-                            const isForActiveUser =
-                                currentActiveUser &&
-                                (newMessage.sender === currentActiveUser || newMessage.receiver === currentActiveUser);
-
-                            if (isForActiveUser) {
-                                console.log("✅ Message is for active user, adding to chat");
-                                setMessages((prev) => {
-                                    // Check if message already exists (avoid duplicates)
-                                    // Check by message_id, id, or a combination of sender+receiver+text_body+timestamp
-                                    const exists = prev.some((m) => {
-                                        if (m.message_id && newMessage.message_id) {
-                                            return m.message_id === newMessage.message_id;
-                                        }
-                                        if (m.id && newMessage.id && !m.id.toString().startsWith("temp-")) {
-                                            return m.id === newMessage.id;
-                                        }
-                                        // Fallback: check by content and sender/receiver
-                                        return (
-                                            m.sender === newMessage.sender &&
-                                            m.receiver === newMessage.receiver &&
-                                            m.text_body === newMessage.text_body &&
-                                            Math.abs((m.timestamp || 0) - (newMessage.created_at ? new Date(newMessage.created_at).getTime() : Date.now())) < 5000
-                                        );
-                                    });
-
-                                    if (exists) {
-                                        console.log("⚠️ Message already exists, skipping");
-                                        return prev;
-                                    }
-
-                                    const formattedMessage = {
-                                        ...newMessage,
-                                        direction: newMessage.direction === "in" ? "incoming" : "outgoing",
-                                        timestamp: newMessage.created_at
-                                            ? new Date(newMessage.created_at).getTime()
-                                            : Date.now(),
-                                        // Ensure we have an id for React key
-                                        id: newMessage.id || newMessage.message_id || `msg-${Date.now()}-${Math.random()}`,
-                                    };
-
-                                    console.log("➕ Adding message to chat:", formattedMessage);
-                                    return [...prev, formattedMessage];
-                                });
-                            } else {
-                                console.log(`ℹ️ Message is not for active user (active: ${currentActiveUser}, sender: ${newMessage.sender}, receiver: ${newMessage.receiver}), skipping UI update`);
-                            }
-                        } else if (data.type === "connection") {
-                            // Connection confirmation
-                            console.log("✅", data.message);
-                        } else if (data.type === "pong") {
-                            // Keep-alive response
-                            console.log("WebSocket keep-alive");
-                        }
-                    } catch (error) {
-                        console.error("Error parsing WebSocket message:", error);
-                    }
-                };
-
-                ws.onerror = (error) => {
-                    console.error("❌ WebSocket error:", error);
-                    setWsConnected(false);
-                };
-
-                ws.onclose = () => {
-                    console.log("❌ WebSocket disconnected");
-                    setWsConnected(false);
-
-                    // Attempt to reconnect
-                    if (reconnectAttempts < maxReconnectAttempts) {
-                        reconnectAttempts++;
-                        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff, max 30s
-                        console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
-                        reconnectTimeout = setTimeout(connectWebSocket, delay);
-                    } else {
-                        console.error("Max reconnection attempts reached");
-                    }
-                };
-            } catch (error) {
-                console.error("Error creating WebSocket:", error);
-                setWsConnected(false);
-            }
-        };
-
-        connectWebSocket();
-
-        // Send periodic ping to keep connection alive (every 30 seconds)
-        const pingInterval = setInterval(() => {
-            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                try {
-                    wsRef.current.send(JSON.stringify({ type: "ping" }));
-                } catch (error) {
-                    console.error("Error sending ping:", error);
+                if (formattedMessage.sender === activeUser || formattedMessage.receiver === activeUser) {
+                    setMessages((prev) => {
+                        if (prev.some((m) => m.id === formattedMessage.id)) return prev;
+                        return [...prev, formattedMessage];
+                    });
                 }
-            }
-        }, 30000);
 
-        return () => {
-            clearInterval(pingInterval);
-            if (reconnectTimeout) {
-                clearTimeout(reconnectTimeout);
+                if (msg.direction === "in" && msg.sender && msg.sender !== "system") {
+                    setUsers((prev) => (prev.includes(msg.sender) ? prev : [...prev, msg.sender]));
+                }
+            } else if (data.type === "connection") {
+                console.log("✅", data.message);
+            } else if (data.type === "pong") {
+                console.log("WebSocket keep-alive");
             }
-            if (wsRef.current) {
-                wsRef.current.close();
-                wsRef.current = null;
-            }
-        };
-    }, []); // Only connect once on mount
+        } catch (err) {
+            console.error("Failed to parse WS message:", err);
+        }
+    };
+
+    // Cleanup on unmount or activeUser change
+    return () => {
+        wsRef.current?.close();
+        setWsConnected(false);
+    };
+}, [activeUser]);
+
+
+
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -224,42 +143,60 @@ export default function WhatsAppUi() {
         activeUserRef.current = activeUser;
     }, [activeUser]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || !activeUser) return;
+const sendMessage = async () => {
+    if (!input.trim() || !activeUser) return;
 
-        const messageText = input.trim();
-        setInput("");
+    const messageText = input.trim();
+    setInput("");
 
-        // Optimistically add message to UI
-        const localMsg = {
-            id: `temp-${Date.now()}`,
-            sender: "system",
-            receiver: activeUser,
-            text_body: messageText,
-            direction: "outgoing",
-            timestamp: Date.now(),
+    // Optimistic message
+    const localMsg = {
+        id: `temp-${Date.now()}`,
+        sender: "system",
+        receiver: activeUser,
+        text_body: messageText,
+        direction: "outgoing",
+        timestamp: Date.now(), // milliseconds
+        message_type: "text",
+    };
+
+    setMessages((prev) => [...prev, localMsg]);
+
+    try {
+        const res = await axios.post(
+            `${WHATSAPP_SERVER}/messages/send`,
+            { receiver: activeUser, message: messageText },
+            { withCredentials: true }
+        );
+
+        const serverMsg = res.data.message || {};
+
+        // Normalize timestamp: created_at → milliseconds
+        const normalizedMsg = {
+            ...serverMsg,
+            direction: serverMsg.direction === "in" ? "incoming" : "outgoing",
+            timestamp: serverMsg.created_at
+                ? new Date(serverMsg.created_at).getTime()
+                : Date.now(),
+            id: serverMsg.id || serverMsg.message_id || `msg-${Date.now()}-${Math.random()}`,
+            message_type: serverMsg.message_type || "text",
+            text_body: serverMsg.text_body || messageText,
         };
 
-        setMessages((prev) => [...prev, localMsg]);
+        // Replace optimistic message with normalized server message
+        setMessages((prev) =>
+            prev.map((m) => (m.id === localMsg.id ? normalizedMsg : m))
+        );
+    } catch (error) {
+        console.error("Error sending message:", error);
+        // Remove optimistic message if sending fails
+        setMessages((prev) => prev.filter((m) => m.id !== localMsg.id));
+        alert("Failed to send message. Please try again.");
+    }
+};
 
-        try {
-            await axios.post(`${WHATSAPP_SERVER}/messages/send`, {
-                receiver: activeUser,
-                message: messageText,
-            },
-                {
-                    withCredentials: true,
-                });
-            // The WebSocket will receive the actual message from the server
-            // and update the UI, so we can remove the temp message
-            setMessages((prev) => prev.filter((m) => m.id !== localMsg.id));
-        } catch (error) {
-            console.error("Error sending message:", error);
-            // Remove optimistic message on error
-            setMessages((prev) => prev.filter((m) => m.id !== localMsg.id));
-            alert("Failed to send message. Please try again.");
-        }
-    };
+
+
 
     const formatTime = (ts) => {
         if (!ts) return "";
