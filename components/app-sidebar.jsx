@@ -37,15 +37,7 @@ const rawNav = {
         { title: "Knowledge Base", url: "/dashboard/knowledge-base", key: "knowledge_base" },
       ],
     },
-    {
-      title: "Services",
-      icon: Bot,
-      permissionKey: "customer",
-      items: [
-        { title: "Immigration Services", url: "/dashboard/immigration-services", key: "immigration_services" },
-      ],
-    },
-    {
+        {
       title: "Workspaces",
       icon: Settings2,
       permissionKey: "emails",
@@ -54,6 +46,15 @@ const rawNav = {
         { title: "WhatsApp", url: "/dashboard/whatsapp", key: "whatsapp" },
       ],
     },
+    {
+      title: "Services",
+      icon: Bot,
+      permissionKey: "customer",
+      items: [
+        { title: "Immigration Services", url: "/dashboard/immigration-services", key: "immigration_services" },
+      ],
+    },
+
     // {
     //   title: "Documents",
     //   icon: BookOpen,
