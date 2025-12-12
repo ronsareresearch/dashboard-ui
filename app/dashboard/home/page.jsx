@@ -95,8 +95,8 @@ const handleLogout = async () => {
 
 
   return (
-    <div className="flex flex-col h-screen bg-gray-800 p-2">
-       <div className=" rounded-tl-3xl rounded-tr-3xl bg-gray-100 px-4 pt-4 flex justify-between">
+    <div className="flex flex-col h-screen bg-gray-800">
+       <div className="bg-gray-100 px-4 pt-4 flex justify-between">
         <h1 className="text-3xl font-bold py-2 flex items-center justify-start">
 
             Wellcome to Dashboard</h1>
@@ -109,7 +109,7 @@ const handleLogout = async () => {
       <main className="flex flex-1 overflow-hidden">
 
         {/* LEFT PANEL */}
-        <div className="flex-1 max-w-[70%] p-4 bg-gray-100 rounded-bl-3xl flex flex-col overflow-hidden">
+        <div className="flex-1 max-w-[70%] p-4 bg-gray-100 flex flex-col overflow-hidden">
 
    
 

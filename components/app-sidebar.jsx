@@ -29,17 +29,16 @@ import { useAuthUser } from "@/app/lib/useAuthUser";
 const rawNav = {
   navMain: [
     {
-      title: "Main",
+      title: "Home",
       icon: SquareTerminal,
       permissionKey: "main",
       items: [
         { title: "Home", url: "/dashboard/home", key: "home" },
-        { title: "WhatsApp", url: "/dashboard/whatsapp", key: "whatsapp" },
         { title: "Knowledge Base", url: "/dashboard/knowledge-base", key: "knowledge_base" },
       ],
     },
     {
-      title: "Customer",
+      title: "Services",
       icon: Bot,
       permissionKey: "customer",
       items: [
@@ -47,23 +46,24 @@ const rawNav = {
       ],
     },
     {
-      title: "Emails",
+      title: "Workspaces",
       icon: Settings2,
       permissionKey: "emails",
       items: [
-        { title: "Inbox", url: "/dashboard/email-inbox", key: "inbox" },
+        { title: "Emails", url: "/dashboard/email-inbox", key: "inbox" },
+        { title: "WhatsApp", url: "/dashboard/whatsapp", key: "whatsapp" },
       ],
     },
-    {
-      title: "Documents",
-      icon: BookOpen,
-      permissionKey: "documents",
-      items: [
-        { title: "Forms", url: "/dashboard/user-profile", key: "forms" },
-        { title: "Vault", url: "/dashboard/user-actions", key: "vault" },
-        { title: "Search", url: "/dashboard/search", key: "search" },
-      ],
-    },
+    // {
+    //   title: "Documents",
+    //   icon: BookOpen,
+    //   permissionKey: "documents",
+    //   items: [
+    //     { title: "Forms", url: "/dashboard/user-profile", key: "forms" },
+    //     { title: "Vault", url: "/dashboard/user-actions", key: "vault" },
+    //     { title: "Search", url: "/dashboard/search", key: "search" },
+    //   ],
+    // },
     {
       title: "User Management",
       icon: Settings2,
@@ -83,16 +83,31 @@ const rawNav = {
 };
 
 // ✅ FILTER ENGINE
-const filterNav = (nav, permissions) =>
-  nav
+const filterNav = (nav, permissions) => {
+  return nav
     .map((group) => {
+      let groupPerm = permissions?.[group.permissionKey];
+
+      // ✅ TEMP FIX: If main.whatsapp is true → force allow emails group
+      if (permissions?.main?.whatsapp === true && group.permissionKey === "emails") {
+        groupPerm = {
+          inbox: true,
+          whatsapp: true,
+        };
+      }
+
+      // normal filtering
       const allowedItems = group.items.filter(
-        (item) => permissions?.[group.permissionKey]?.[item.key]
+        (item) => groupPerm?.[item.key]
       );
+
       if (!allowedItems.length) return null;
+
       return { ...group, items: allowedItems };
     })
     .filter(Boolean);
+};
+
 
 export function AppSidebar(props) {
   const { user, loading } = useAuthUser();

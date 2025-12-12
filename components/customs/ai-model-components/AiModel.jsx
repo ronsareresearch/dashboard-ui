@@ -275,7 +275,7 @@ const uploadAudio = async (audioBlob) => {
 
 
   return (
-    <div className="w-[30%] h-full py-4 pr-4 bg-gray-100 backdrop-blur-xl rounded-br-3xl flex flex-col">
+    <div className="w-[30%] h-full py-4 pr-4 bg-gray-100 backdrop-blur-xl flex flex-col">
       {/** Hidden image input */}
       <input
         type="file"

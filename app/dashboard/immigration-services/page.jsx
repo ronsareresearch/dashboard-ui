@@ -24,13 +24,13 @@ export default function ImmigrationPage() {
 
   return (
     <div
-      className={`flex flex-col h-screen p-2 transition-colors duration-300 ${
+      className={`flex flex-col h-screen transition-colors duration-300 ${
         darkMode ? "bg-[#0C0C0D]" : "bg-gray-800"
       }`}
     >
       {/* HEADER */}
       <header
-        className={`rounded-t-3xl flex justify-between py-2 px-6 shrink-0 items-center gap-2 transition ${
+        className={`flex justify-between py-2 px-6 shrink-0 items-center gap-2 transition ${
           darkMode ? "bg-[#1A1B1E]" : "bg-white"
         }`}
       >
@@ -62,7 +62,7 @@ export default function ImmigrationPage() {
 
       {/* MAIN CONTENT  */}
       <main
-        className={`flex-1 overflow-auto p-4 rounded-b-3xl transition bg-gray-100`}
+        className={`flex-1 overflow-auto p-4 transition bg-gray-100`}
       >
        <ImmigrationBanner /> 
        <ImmigrationSearchUI />

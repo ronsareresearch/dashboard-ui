@@ -192,11 +192,11 @@ const sendMessage = async () => {
     }, []);
 
     return (
-        <div className="flex w-full h-screen bg-gray-800 p-2  text-gray-900">
+        <div className="flex w-full h-screen bg-gray-800  text-gray-900">
             <div className="flex w-full ">
 
                 {/* LEFT SIDEBAR */}
-                <div className="w-96 bg-white rounded-l-2xl  border-r border-gray-200 flex flex-col shadow-sm">
+                <div className="w-96 bg-white border-r border-gray-200 flex flex-col shadow-sm">
                     {/* Header */}
                     <div className="p-4 bg-white rounded-t-2xl border-b border-gray-200 flex items-center justify-between">
                         <h1 className="text-xl font-bold text-gray-800">WhatsApp</h1>
@@ -273,17 +273,17 @@ const sendMessage = async () => {
 
                     {/* Chat Header */}
                     {activeUser ? (
-                        <div className="p-4 border-b border-gray-200 bg-white shadow-sm  rounded-tr-2xl">
+                        <div className="p-4 border-b border-gray-200 bg-white shadow-sm ">
                             <p className="font-semibold text-lg text-gray-800">{activeUser}</p>
                         </div>
                     ) : (
-                        <div className="p-4 text-gray-600 border-b bg-white text-lg rounded-tr-2xl">
+                        <div className="p-4 text-gray-600 border-b bg-white text-lg">
                             Select a user to start chatting
                         </div>
                     )}
 
                     {/* Messages Section */}
-                    <div className="flex-1 p-6 overflow-y-auto bg-gray-100  rounded-r-2xl">
+                    <div className="flex-1 p-6 overflow-y-auto bg-gray-100 ">
                         {isLoading ? (
                             <div className="text-center py-4 text-gray-500">Loading...</div>
                         ) : messages.length === 0 ? (
@@ -348,7 +348,7 @@ const sendMessage = async () => {
 
                     {/* Input Bar */}
                     {activeUser && (
-                        <div className="p-4 bg-white border-t border-gray-200 flex gap-2 shadow-sm rounded-br-2xl">
+                        <div className="p-4 bg-white border-t border-gray-200 flex gap-2 shadow-sm">
                             <input
                                 className="flex-1 bg-gray-100 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400"
                                 placeholder="Type a message…"

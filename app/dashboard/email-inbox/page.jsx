@@ -241,17 +241,17 @@ const wsRef = useRef(null);
     // UI
     // ---------------------------
     return (
-        <div className="h-screen w-full flex bg-gray-800 p-2">
+        <div className="h-screen w-full flex bg-gray-800">
 
             {/* MAIN WRAPPER (Dynamic Split: 50% / 50%) */}
-            <div className={`flex bg-white rounded-3xl overflow-hidden w-full`}>
+            <div className={`flex bg-white overflow-hidden w-full`}>
 
                 {/* LEFT SIDE - Inbox (50% if rightPanelOpen else 100%) */}
                 <div className={`${rightPanelOpen ? "w-[30%]" : "w-full"} h-screen flex flex-col transition-all duration-300`}>
 
                     {/* Header */}
                     <div className="p-6 shrink-0">
-                        <h1 className="text-3xl font-bold">📨 Gmail Inbox</h1>
+                        <h1 className="text-3xl font-bold">📨 Mail Inbox</h1>
 
                         <div className="flex flex-wrap space-x-2 mt-4 gap-2">
                             <select
