@@ -35,6 +35,7 @@ const rawNav = {
       items: [
         { title: "Home", url: "/dashboard/home", key: "home" },
         { title: "Knowledge Base", url: "/dashboard/knowledge-base", key: "knowledge_base" },
+        { title: "upload-file", url: "/dashboard/upload-file", key: "knowledge_base" },
       ],
     },
         {
