@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function UploadPage() {
   const [files, setFiles] = useState([]);
@@ -8,21 +8,13 @@ export default function UploadPage() {
   const [status, setStatus] = useState({});
   const fileInputRef = useRef();
 
-  const BATCH_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
+  const CHUNK_SIZE = 16 * 1024 * 1024; // 16 MB
+  const BATCH_SIZE = 20; // number of files per batch
+  const MAX_RETRIES = 5;
+  const CONCURRENCY = 20; // parallel uploads per batch
+  const BATCH_DELAY = 500; // 0.5s delay between batches
 
-  // Handle drag & drop
-  const handleDrop = (e) => {
-    e.preventDefault();
-    addFiles(Array.from(e.dataTransfer.files));
-  };
-
-  // Handle file/folder selection
-  const handleSelectFiles = (e) => {
-    if (!e.target.files) return;
-    addFiles(Array.from(e.target.files));
-  };
-
-  // Add new files, preserve folder structure
+  // Add new files
   const addFiles = (newFiles) => {
     setFiles((prev) => {
       const combined = [...prev];
@@ -30,14 +22,25 @@ export default function UploadPage() {
         const pathKey = file.webkitRelativePath || file.name;
         if (!combined.find((f) => (f.webkitRelativePath || f.name) === pathKey)) {
           combined.push(file);
-          setStatus((s) => ({ ...s, [pathKey]: "pending" }));
+          setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
         }
       });
       return combined;
     });
   };
 
-  // Format file size
+  // Drag & drop
+  const handleDrop = (e) => {
+    e.preventDefault();
+    addFiles(Array.from(e.dataTransfer.files));
+  };
+
+  // File select
+  const handleSelectFiles = (e) => {
+    if (!e.target.files) return;
+    addFiles(Array.from(e.target.files));
+  };
+
   const formatBytes = (bytes) => {
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (!bytes) return "0 B";
@@ -45,116 +48,114 @@ export default function UploadPage() {
     return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
   };
 
-  // Upload single file
-  const uploadFile = async (file) => {
+  // Upload a single file with retry
+  const uploadFileWithRetry = async (file) => {
     const pathKey = file.webkitRelativePath || file.name;
-    try {
-      setStatus((s) => ({ ...s, [pathKey]: "uploading" }));
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        setStatus((s) => ({ ...s, [pathKey]: "uploading" }));
 
-      // 1️⃣ Get signed URL from backend
-      const res = await fetch(
-        "https://email.ronsare.site/api/v1/upload/create-resumable-upload",
-        {
+        // 1️⃣ Get signed URL
+        const res = await fetch(
+          "https://zzsn3hdk-4001.inc1.devtunnels.ms/api/v1/upload/create-resumable-upload",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: pathKey,
+              content_type: file.type || "application/octet-stream",
+            }),
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to get signed URL");
+        const { signedUrl } = await res.json();
+
+        // 2️⃣ Start resumable upload
+        const startRes = await fetch(signedUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            filename: pathKey,
-            content_type: file.type || "application/octet-stream",
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to get signed URL");
-      const { signedUrl } = await res.json();
-
-      // 2️⃣ Start resumable upload
-      const startRes = await fetch(signedUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-          "x-goog-resumable": "start",
-        },
-      });
-
-      const uploadUrl = startRes.headers.get("Location");
-      if (!uploadUrl) throw new Error("Failed to start resumable upload");
-
-      // 3️⃣ Upload in chunks
-      const chunkSize = 16 * 1024 * 1024; // 16 MB
-      let offset = 0;
-      const startTime = Date.now();
-
-      while (offset < file.size) {
-        const chunk = file.slice(offset, offset + chunkSize);
-        const end = Math.min(offset + chunkSize, file.size) - 1;
-
-        const uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
           headers: {
-            "Content-Length": String(chunk.size),
-            "Content-Range": `bytes ${offset}-${end}/${file.size}`,
+            "Content-Type": file.type || "application/octet-stream",
+            "x-goog-resumable": "start",
           },
-          body: chunk,
         });
 
-        if (![200, 201, 308].includes(uploadRes.status)) {
-          throw new Error(`Upload failed at ${offset}`);
+        const uploadUrl = startRes.headers.get("Location");
+        if (!uploadUrl) throw new Error("Failed to start upload");
+
+        // 3️⃣ Upload chunks
+        let offset = 0;
+        const startTime = Date.now();
+
+        while (offset < file.size) {
+          const chunk = file.slice(offset, offset + CHUNK_SIZE);
+          const end = Math.min(offset + CHUNK_SIZE, file.size) - 1;
+
+          const uploadRes = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: {
+              "Content-Length": String(chunk.size),
+              "Content-Range": `bytes ${offset}-${end}/${file.size}`,
+            },
+            body: chunk,
+          });
+
+          if (![200, 201, 308].includes(uploadRes.status)) {
+            throw new Error(`Upload failed at ${offset}`);
+          }
+
+          offset += chunk.size;
+          const elapsed = (Date.now() - startTime) / 1000;
+          const speed = offset / elapsed;
+
+          setProgress((p) => ({
+            ...p,
+            [pathKey]: { percent: Math.floor((offset / file.size) * 100), speed },
+          }));
         }
 
-        offset += chunk.size;
-        const elapsed = (Date.now() - startTime) / 1000;
-        const speed = offset / elapsed;
-
-        setProgress((p) => ({
-          ...p,
-          [pathKey]: { percent: Math.floor((offset / file.size) * 100), speed },
-        }));
+        setStatus((s) => ({ ...s, [pathKey]: "done" }));
+        return;
+      } catch (err) {
+        console.log(`${pathKey} attempt ${attempt} failed`);
+        if (attempt === MAX_RETRIES) setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
       }
-
-      setStatus((s) => ({ ...s, [pathKey]: "done" }));
-    } catch (err) {
-      console.error(err);
-      setStatus((s) => ({ ...s, [pathKey]: "error" }));
-      setProgress((p) => ({ ...p, [pathKey]: { ...p[pathKey], error: true } }));
     }
   };
 
-  // Upload all pending/error files in 2GB batches
-  const uploadAll = async () => {
-    let batch = [];
-    let batchSize = 0;
-
-    for (const file of files) {
-      const pathKey = file.webkitRelativePath || file.name;
-      if (status[pathKey] === "pending" || status[pathKey] === "error") {
-        if (batchSize + file.size > BATCH_SIZE && batch.length > 0) {
-          await Promise.all(batch.map(uploadFile));
-          batch = [];
-          batchSize = 0;
-        }
-        batch.push(file);
-        batchSize += file.size;
-      }
-    }
-
-    if (batch.length > 0) {
-      await Promise.all(batch.map(uploadFile));
+  // Upload a batch with concurrency
+  const uploadBatch = async (batch) => {
+    let queue = [...batch];
+    while (queue.length > 0) {
+      const active = queue.splice(0, CONCURRENCY);
+      await Promise.all(active.map(uploadFileWithRetry));
     }
   };
 
-  // Re-upload failed files only
-  const reUploadFailed = async () => {
-    const failedFiles = files.filter(
-      (file) => status[file.webkitRelativePath || file.name] === "error"
+  // Start uploading all files in batches
+  const startUpload = async () => {
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+      await uploadBatch(batch);
+      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
+    }
+
+    // Retry remaining files asynchronously after all batches
+    const remaining = files.filter(
+      (f) => status[f.webkitRelativePath || f.name] === "not_uploaded"
     );
-    if (failedFiles.length === 0) return;
-    await Promise.all(failedFiles.map(uploadFile));
+    if (remaining.length > 0) {
+      console.log(`Retrying remaining ${remaining.length} files`);
+      await Promise.all(remaining.map(uploadFileWithRetry));
+    }
   };
 
-  const totalSize = files.reduce((sum, f) => sum + f.size, 0);
-  const failedCount = files.filter(
-    (file) => status[file.webkitRelativePath || file.name] === "error"
-  ).length;
+  // Auto-start upload when files are added
+  useEffect(() => {
+    if (files.length > 0) startUpload();
+  }, [files]);
+
+  const notUploadedCount = files.filter((f) => status[f.webkitRelativePath || f.name] === "not_uploaded").length;
 
   return (
     <div className="flex items-center justify-center py-10">
@@ -182,70 +183,47 @@ export default function UploadPage() {
 
         {files.length > 0 && (
           <div className="mb-4 text-sm text-gray-700">
-            <div>
-              <strong>Total files:</strong> {files.length}
-            </div>
-            <div>
-              <strong>Total size:</strong> {formatBytes(totalSize)}
-            </div>
+            <div><strong>Total files:</strong> {files.length}</div>
+            <div><strong>Not uploaded:</strong> {notUploadedCount}</div>
           </div>
         )}
 
-        <div className="flex space-x-2 mb-4">
-          <button
-            onClick={uploadAll}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-          >
-            Upload All
-          </button>
-          <button
-            onClick={reUploadFailed}
-            className={`px-4 py-2 rounded-md text-white transition ${
-              failedCount > 0 ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"
-            }`}
-            disabled={failedCount === 0}
-          >
-            Re-upload Failed {failedCount > 0 && `(${failedCount})`}
-          </button>
-        </div>
-
         <div className="mt-5 space-y-3">
-          {files.map((file) => {
+          {files.map((file, index) => {
             const pathKey = file.webkitRelativePath || file.name;
+            const currentStatus = status[pathKey];
             return (
               <div
                 key={pathKey}
-                className="p-2 border border-gray-200 rounded-lg bg-gray-50 shadow-sm"
+                className={`p-2 border rounded-lg shadow-sm ${
+                  currentStatus === "done"
+                    ? "bg-green-50 border-green-300"
+                    : currentStatus === "not_uploaded"
+                    ? "bg-red-50 border-red-300"
+                    : "bg-gray-50 border-gray-200"
+                }`}
               >
                 <div className="flex items-center">
-                  {/* File name with ellipsis */}
-                  <span
-                    className="w-[300px] truncate font-medium text-gray-800 text-sm"
-                    title={pathKey}
-                  >
-                    {pathKey}
+                  <span className="w-[300px] truncate font-medium text-gray-800 text-sm" title={pathKey}>
+                    {index + 1}. {pathKey}
                   </span>
-
-                  {/* Progress bar */}
                   <div className="flex-1 h-2 bg-gray-200 rounded mx-2 overflow-hidden">
                     <div
                       className={`h-full rounded transition-all duration-300 ${
-                        status[pathKey] === "done"
+                        currentStatus === "done"
                           ? "bg-green-500"
-                          : status[pathKey] === "error"
+                          : currentStatus === "not_uploaded"
                           ? "bg-red-500"
                           : "bg-blue-500"
                       }`}
                       style={{ width: `${progress[pathKey]?.percent || 0}%` }}
                     />
                   </div>
-
-                  {/* Status / percent */}
-                  <span className="w-12 text-right text-xs">
-                    {status[pathKey] === "done"
+                  <span className="w-20 text-right text-xs">
+                    {currentStatus === "done"
                       ? "✔️"
-                      : status[pathKey] === "error"
-                      ? "❌"
+                      : currentStatus === "not_uploaded"
+                      ? "Not Uploaded"
                       : `${progress[pathKey]?.percent || 0}%`}
                   </span>
                 </div>
