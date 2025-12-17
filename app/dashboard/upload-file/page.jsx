@@ -7,7 +7,6 @@ const traverseFileTree = async (entry, path = "") => {
   return new Promise((resolve) => {
     if (entry.isFile) {
       entry.file((file) => {
-        // Store relative path separately
         resolve([{ file, relativePath: path + file.name }]);
       });
     } else if (entry.isDirectory) {
@@ -38,10 +37,9 @@ export default function UploadPage() {
     setFiles((prev) => {
       const combined = [...prev];
       newFiles.forEach(({ file, relativePath }) => {
-        const pathKey = relativePath || file.name;
-        if (!combined.find((f) => f.relativePath === pathKey) && !uploadedFiles.has(pathKey)) {
-          combined.push({ file, relativePath: pathKey });
-          setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
+        if (!combined.find((f) => f.relativePath === relativePath) && !uploadedFiles.has(relativePath)) {
+          combined.push({ file, relativePath });
+          setStatus((s) => ({ ...s, [relativePath]: "not_uploaded" }));
         }
       });
       return combined;
@@ -124,8 +122,9 @@ export default function UploadPage() {
           const elapsed = (Date.now() - startTime) / 1000;
           const speed = offset / elapsed;
 
-          setProgress((p) => ({
-            ...p,
+          // ✅ Update progress immutably for this file only
+          setProgress((prev) => ({
+            ...prev,
             [pathKey]: { percent: Math.floor((offset / file.size) * 100), speed },
           }));
         }

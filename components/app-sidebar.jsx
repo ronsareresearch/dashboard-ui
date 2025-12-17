@@ -133,14 +133,14 @@ export function AppSidebar(props) {
       <SidebarHeader>
         <Branding />
       </SidebarHeader>
-
+      <div className="h-[200px]"></div>
       <SidebarContent>
         <NavMain items={filteredNav} />
         <NavProjects projects={filteredProjects} />
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="w-full text-center py-4 border-t border-gray-600 flex flex-col items-center space-y-1">
+        <div className="w-full text-center py-4 border-t border-gray-200 flex flex-col items-center space-y-1">
           <span className="text-gray-400 text-xs">© 2025 All rights reserved</span>
           <span className="text-white/80 text-sm font-semibold">
             Developed by Ronsare

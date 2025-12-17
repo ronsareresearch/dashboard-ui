@@ -26,37 +26,40 @@ const ProfileNav = ({ handleLogout }) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div className="flex items-center gap-3 cursor-pointer relative z-50 pl-2 pr-4 py-2 bg-gray-200 border border-black/10 shadow-inner rounded-full min-w-[200px]">
+        <div className="flex items-center gap-3 cursor-pointer relative z-50 pl-2 pr-4 py-2  rounded-full ">
+         
+            {/* Name & Email */}
+          {/* <div className="flex flex-col overflow-hidden">
+            <div className="text-sm font-medium text-gray-800 truncate">
+              <div className="text-sm font-medium text-gray-800 truncate">
+               Logged in as  {userData ? (
+                  userData.role
+                ) : (
+                  <div className="h-4 w-20 bg-gray-300 rounded animate-pulse" />
+                )}
+              </div>
+              <div className="text-xs text-gray-500 truncate">
+                {userData ? (
+                  userData.email
+                ) : (
+                  <div className="h-3 w-32 bg-gray-300 rounded animate-pulse mt-1" />
+                )}
+              </div>
+
+            </div>
+          </div>
+          */}
           {/* Avatar */}
           <div className="relative">
             <div className="h-10 w-10 border shadow-inner rounded-full bg-gray-300 flex items-center justify-center">
               <UserIcon className="w-6 h-6 text-black" />
             </div>
-            <span
+            {/* <span
               className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-orange-300"
-            />
+            /> */}
           </div>
 
-          {/* Name & Email */}
-          <div className="flex flex-col overflow-hidden">
-            <div className="text-sm font-medium text-gray-800 truncate">
-           <div className="text-sm font-medium text-gray-800 truncate">
-  {userData ? (
-    userData.role
-  ) : (
-    <div className="h-4 w-20 bg-gray-300 rounded animate-pulse" />
-  )}
-</div>
-<div className="text-xs text-gray-500 truncate">
-  {userData ? (
-    userData.email
-  ) : (
-    <div className="h-3 w-32 bg-gray-300 rounded animate-pulse mt-1" />
-  )}
-</div>
-
-            </div>
-          </div>
+       
         </div>
       </PopoverTrigger>
 

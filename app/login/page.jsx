@@ -21,45 +21,44 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-  try {
-    const res = await authApi.post(
-      `${API_BASE_URL}/login`,
-      {
-        email: formData.email,
-        password: formData.password,
-      },
-    );
+    try {
+      const res = await authApi.post(
+        `${API_BASE_URL}/login`,
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+      );
 
-    if (res.data?.success || res.status === 200) {
-      router.push("/dashboard/home"); // redirect after login
-    } else {
-      setError("Login failed.");
+      if (res.data?.success || res.status === 200) {
+        router.push("/dashboard/home"); // redirect after login
+      } else {
+        setError("Login failed.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err?.response?.data?.detail || "Invalid credentials.");
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error("Login error:", err);
-    setError(err?.response?.data?.detail || "Invalid credentials.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
 
   return (
     <div className="flex flex-col lg:flex-row h-screen justify-center">
       {/* Left side with welcome message */}
-      <div className="hidden lg:flex items-center justify-center lg:w-[60%] relative bg-[#b8cabc] overflow-hidden">
+      <div className="hidden lg:flex items-center justify-center lg:w-[60%] relative bg-[#657c6a] overflow-hidden">
         {/* <div className="absolute inset-0 bg-black/20" /> */}
         {/* <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" /> */}
         {/* <div className="absolute top-20 left-20 w-72 h-72 bg-[#dfe6e9]/20 rounded-full blur-3xl animate-pulse" /> */}
         {/* <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" /> */}
         <div className="z-10 flex flex-col justify-center items-center text-center p-12 text-white">
           {/* <Sparkles className="w-16 h-16 text-black/70 mb-4" /> */}
-          <Image src="/login_img.png" alt="Logo" width={500} height={500} className="h-[400px] w-[400px] object-contain pb-4" />
 
           <h1 className="text-5xl font-bold mb-4 bg-black/80 bg-clip-text text-transparent">
             Welcome to the Future
@@ -85,13 +84,20 @@ export default function Login() {
       </div>
 
       {/* Right side - login form */}
-      <div className="flex items-center justify-center w-full lg:w-[40%] bg-[#f9fffb] px-6 py-12">
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl p-8">
+      <div className="relative flex items-center justify-center flex-col w-full lg:w-[40%] bg-[#f9fffb] px-6 py-12">
+        <div className="absolute left-6 top-6 flex gap-2 items-center">
+          <Image src="/login_img.svg" alt="Logo" width={500} height={500} className="h-20 w-20 object-contain" />
+          <span className="h-12 border-[0.5px] border-black"></span>
+          <span className="font-thin text-[30px] ml-2 tracking-widest">Automation AI</span>
+
+        </div>
+        <div className="w-full max-w-md backdrop-blur-sm rounded-xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Sign In
+              Enterprise Hub
             </h1>
-            <p className="text-gray-600 text-base mt-2">Access your automation dashboard</p>
+
+            <p className="text-gray-600 text-base mt-2">Login to Guru Accounting NY Account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -116,7 +122,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 border border-gray-200 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 bg-white border border-gray-200 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
                   autoComplete="email"
                 />
               </div>
@@ -137,7 +143,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 pr-10 border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
                   autoComplete="current-password"
                 />
                 <button
@@ -150,6 +156,28 @@ export default function Login() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Select Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                // value={formData.role}
+                // onChange={handleChange}
+                required
+                disabled={isLoading}
+                className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+              >
+                <option value="Admin">Admin</option>
+                <option value="Member">Member</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end text-sm">
+              <span className="text-blue-500">Forget Password</span>
             </div>
 
             <button
