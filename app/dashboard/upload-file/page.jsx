@@ -56,7 +56,7 @@ export default function UploadPage() {
 
         // 1️⃣ Get signed URL
         const res = await fetch(
-          "https://email.ronsare.site/api/v1/upload/create-resumable-upload",
+          "https://778203bea31a.ngrok-free.app/upload/create-resumable-upload",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
