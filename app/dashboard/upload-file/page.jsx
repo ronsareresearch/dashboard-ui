@@ -56,7 +56,7 @@ export default function UploadPage() {
 
         // 1️⃣ Get signed URL
         const res = await fetch(
-          "https://1805171e4643.ngrok-free.app/upload/create-resumable-upload",
+          "https://b69bfe9602b5.ngrok-free.app/upload/create-resumable-upload",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
