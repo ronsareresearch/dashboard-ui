@@ -57,7 +57,7 @@ export default function UploadPage() {
 
         // 1️⃣ Get signed URL
         const res = await fetch(
-          "https://zzsn3hdk-4001.inc1.devtunnels.ms/api/v1/upload/create-resumable-upload",
+          "https://dashboard.ronsare.site/api/v1/upload/create-resumable-upload",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
