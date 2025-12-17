@@ -6,19 +6,20 @@ export default function UploadPage() {
   const [files, setFiles] = useState([]);
   const [progress, setProgress] = useState({});
   const [status, setStatus] = useState({});
+  const [uploadedFiles, setUploadedFiles] = useState(new Set()); // track uploaded files
   const fileInputRef = useRef();
 
   const CHUNK_SIZE = 16 * 1024 * 1024; // 16 MB
   const MAX_RETRIES = 5;
-  const CONCURRENCY = 5; // number of files uploading in parallel
+  const CONCURRENCY = 5; // number of parallel uploads
 
-  // Add files
+  // Add files without duplicating already uploaded
   const addFiles = (newFiles) => {
     setFiles((prev) => {
       const combined = [...prev];
       newFiles.forEach((file) => {
         const pathKey = file.webkitRelativePath || file.name;
-        if (!combined.find((f) => (f.webkitRelativePath || f.name) === pathKey)) {
+        if (!combined.find((f) => (f.webkitRelativePath || f.name) === pathKey) && !uploadedFiles.has(pathKey)) {
           combined.push(file);
           setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
         }
@@ -46,7 +47,7 @@ export default function UploadPage() {
     return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
   };
 
-  // Upload a single file chunked
+  // Upload a single file in chunks
   const uploadFile = async (file) => {
     const pathKey = file.webkitRelativePath || file.name;
 
@@ -54,18 +55,15 @@ export default function UploadPage() {
       try {
         setStatus((s) => ({ ...s, [pathKey]: "uploading" }));
 
-        // 1️⃣ Get signed URL
-        const res = await fetch(
-          "https://b69bfe9602b5.ngrok-free.app/upload/create-resumable-upload",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              filename: pathKey,
-              content_type: file.type || "application/octet-stream",
-            }),
-          }
-        );
+        // 1️⃣ Get signed URL from backend
+        const res = await fetch("https://b69bfe9602b5.ngrok-free.app/upload/create-resumable-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: pathKey,
+            content_type: file.type || "application/octet-stream",
+          }),
+        });
 
         if (!res.ok) throw new Error("Failed to get signed URL");
         const { signedUrl } = await res.json();
@@ -82,7 +80,7 @@ export default function UploadPage() {
         const uploadUrl = startRes.headers.get("Location");
         if (!uploadUrl) throw new Error("Failed to start upload");
 
-        // 3️⃣ Upload chunks with concurrency (parallel chunks)
+        // 3️⃣ Upload chunks sequentially
         let offset = 0;
         const startTime = Date.now();
 
@@ -113,7 +111,9 @@ export default function UploadPage() {
           }));
         }
 
+        // ✅ Mark as done
         setStatus((s) => ({ ...s, [pathKey]: "done" }));
+        setUploadedFiles((prev) => new Set(prev).add(pathKey)); // add to uploaded set
         return;
       } catch (err) {
         console.warn(`${pathKey} attempt ${attempt} failed`, err);
@@ -124,7 +124,7 @@ export default function UploadPage() {
 
   // Smart parallel uploader
   const startUpload = async () => {
-    const queue = [...files];
+    const queue = files.filter((f) => !uploadedFiles.has(f.webkitRelativePath || f.name));
 
     const workers = new Array(CONCURRENCY).fill(null).map(async () => {
       while (queue.length > 0) {
