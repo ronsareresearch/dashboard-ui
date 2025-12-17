@@ -2,25 +2,45 @@
 
 import { useState, useRef, useEffect } from "react";
 
+// Helper to recursively traverse folders
+const traverseFileTree = async (entry, path = "") => {
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      entry.file((file) => {
+        // Store relative path separately
+        resolve([{ file, relativePath: path + file.name }]);
+      });
+    } else if (entry.isDirectory) {
+      const dirReader = entry.createReader();
+      dirReader.readEntries(async (entries) => {
+        const filesArrays = await Promise.all(
+          entries.map((en) => traverseFileTree(en, path + entry.name + "/"))
+        );
+        resolve(filesArrays.flat());
+      });
+    }
+  });
+};
+
 export default function UploadPage() {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // {file, relativePath}
   const [progress, setProgress] = useState({});
   const [status, setStatus] = useState({});
-  const [uploadedFiles, setUploadedFiles] = useState(new Set()); // track uploaded files
+  const [uploadedFiles, setUploadedFiles] = useState(new Set());
   const fileInputRef = useRef();
 
   const CHUNK_SIZE = 16 * 1024 * 1024; // 16 MB
   const MAX_RETRIES = 5;
-  const CONCURRENCY = 5; // number of parallel uploads
+  const CONCURRENCY = 5;
 
-  // Add files without duplicating already uploaded
+  // Add files without duplicating uploaded ones
   const addFiles = (newFiles) => {
     setFiles((prev) => {
       const combined = [...prev];
-      newFiles.forEach((file) => {
-        const pathKey = file.webkitRelativePath || file.name;
-        if (!combined.find((f) => (f.webkitRelativePath || f.name) === pathKey) && !uploadedFiles.has(pathKey)) {
-          combined.push(file);
+      newFiles.forEach(({ file, relativePath }) => {
+        const pathKey = relativePath || file.name;
+        if (!combined.find((f) => f.relativePath === pathKey) && !uploadedFiles.has(pathKey)) {
+          combined.push({ file, relativePath: pathKey });
           setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
         }
       });
@@ -28,34 +48,35 @@ export default function UploadPage() {
     });
   };
 
-  // Drag & drop
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
-    addFiles(Array.from(e.dataTransfer.files));
+    const items = Array.from(e.dataTransfer.items);
+    let allFiles = [];
+
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry();
+      if (entry) {
+        const filesFromEntry = await traverseFileTree(entry);
+        allFiles = allFiles.concat(filesFromEntry);
+      }
+    }
+
+    addFiles(allFiles);
   };
 
-  // File select
   const handleSelectFiles = (e) => {
     if (!e.target.files) return;
-    addFiles(Array.from(e.target.files));
+    const selected = Array.from(e.target.files).map((f) => ({ file: f, relativePath: f.name }));
+    addFiles(selected);
   };
 
-  const formatBytes = (bytes) => {
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    if (!bytes) return "0 B";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
-  };
-
-  // Upload a single file in chunks
-  const uploadFile = async (file) => {
-    const pathKey = file.webkitRelativePath || file.name;
+  const uploadFile = async ({ file, relativePath }) => {
+    const pathKey = relativePath || file.name;
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         setStatus((s) => ({ ...s, [pathKey]: "uploading" }));
 
-        // 1️⃣ Get signed URL from backend
         const res = await fetch("https://b69bfe9602b5.ngrok-free.app/upload/create-resumable-upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -68,7 +89,6 @@ export default function UploadPage() {
         if (!res.ok) throw new Error("Failed to get signed URL");
         const { signedUrl } = await res.json();
 
-        // 2️⃣ Start resumable upload
         const startRes = await fetch(signedUrl, {
           method: "POST",
           headers: {
@@ -80,7 +100,6 @@ export default function UploadPage() {
         const uploadUrl = startRes.headers.get("Location");
         if (!uploadUrl) throw new Error("Failed to start upload");
 
-        // 3️⃣ Upload chunks sequentially
         let offset = 0;
         const startTime = Date.now();
 
@@ -111,9 +130,8 @@ export default function UploadPage() {
           }));
         }
 
-        // ✅ Mark as done
         setStatus((s) => ({ ...s, [pathKey]: "done" }));
-        setUploadedFiles((prev) => new Set(prev).add(pathKey)); // add to uploaded set
+        setUploadedFiles((prev) => new Set(prev).add(pathKey));
         return;
       } catch (err) {
         console.warn(`${pathKey} attempt ${attempt} failed`, err);
@@ -122,10 +140,8 @@ export default function UploadPage() {
     }
   };
 
-  // Smart parallel uploader
   const startUpload = async () => {
-    const queue = files.filter((f) => !uploadedFiles.has(f.webkitRelativePath || f.name));
-
+    const queue = files.filter((f) => !uploadedFiles.has(f.relativePath));
     const workers = new Array(CONCURRENCY).fill(null).map(async () => {
       while (queue.length > 0) {
         const file = queue.shift();
@@ -133,13 +149,10 @@ export default function UploadPage() {
         await uploadFile(file);
       }
     });
-
     await Promise.all(workers);
 
-    // Retry any failed files
-    const remaining = files.filter((f) => status[f.webkitRelativePath || f.name] === "not_uploaded");
+    const remaining = files.filter((f) => status[f.relativePath] === "not_uploaded");
     if (remaining.length > 0) {
-      console.log(`Retrying remaining ${remaining.length} files`);
       await Promise.all(remaining.map(uploadFile));
     }
   };
@@ -148,7 +161,7 @@ export default function UploadPage() {
     if (files.length > 0) startUpload();
   }, [files]);
 
-  const notUploadedCount = files.filter((f) => status[f.webkitRelativePath || f.name] === "not_uploaded").length;
+  const notUploadedCount = files.filter((f) => status[f.relativePath] === "not_uploaded").length;
 
   return (
     <div className="flex items-center justify-center py-10">
@@ -182,12 +195,11 @@ export default function UploadPage() {
         )}
 
         <div className="mt-5 space-y-3">
-          {files.map((file, index) => {
-            const pathKey = file.webkitRelativePath || file.name;
-            const currentStatus = status[pathKey];
+          {files.map(({ file, relativePath }, index) => {
+            const currentStatus = status[relativePath];
             return (
               <div
-                key={pathKey}
+                key={relativePath}
                 className={`p-2 border rounded-lg shadow-sm ${
                   currentStatus === "done"
                     ? "bg-green-50 border-green-300"
@@ -197,8 +209,8 @@ export default function UploadPage() {
                 }`}
               >
                 <div className="flex items-center">
-                  <span className="w-[300px] truncate font-medium text-gray-800 text-sm" title={pathKey}>
-                    {index + 1}. {pathKey}
+                  <span className="w-[300px] truncate font-medium text-gray-800 text-sm" title={relativePath}>
+                    {index + 1}. {relativePath}
                   </span>
                   <div className="flex-1 h-2 bg-gray-200 rounded mx-2 overflow-hidden">
                     <div
@@ -209,7 +221,7 @@ export default function UploadPage() {
                           ? "bg-red-500"
                           : "bg-blue-500"
                       }`}
-                      style={{ width: `${progress[pathKey]?.percent || 0}%` }}
+                      style={{ width: `${progress[relativePath]?.percent || 0}%` }}
                     />
                   </div>
                   <span className="w-20 text-right text-xs">
@@ -217,7 +229,7 @@ export default function UploadPage() {
                       ? "✔️"
                       : currentStatus === "not_uploaded"
                       ? "Not Uploaded"
-                      : `${progress[pathKey]?.percent || 0}%`}
+                      : `${progress[relativePath]?.percent || 0}%`}
                   </span>
                 </div>
               </div>
