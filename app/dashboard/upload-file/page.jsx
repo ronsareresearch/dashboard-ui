@@ -9,12 +9,10 @@ export default function UploadPage() {
   const fileInputRef = useRef();
 
   const CHUNK_SIZE = 16 * 1024 * 1024; // 16 MB
-  const BATCH_SIZE = 20; // number of files per batch
   const MAX_RETRIES = 5;
-  const CONCURRENCY = 20; // parallel uploads per batch
-  const BATCH_DELAY = 500; // 0.5s delay between batches
+  const CONCURRENCY = 5; // number of files uploading in parallel
 
-  // Add new files
+  // Add files
   const addFiles = (newFiles) => {
     setFiles((prev) => {
       const combined = [...prev];
@@ -48,16 +46,17 @@ export default function UploadPage() {
     return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
   };
 
-  // Upload a single file with retry
-  const uploadFileWithRetry = async (file) => {
+  // Upload a single file chunked
+  const uploadFile = async (file) => {
     const pathKey = file.webkitRelativePath || file.name;
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         setStatus((s) => ({ ...s, [pathKey]: "uploading" }));
 
         // 1️⃣ Get signed URL
         const res = await fetch(
-          "https://dashboard.ronsare.site/api/v1/upload/create-resumable-upload",
+          "https://email.ronsare.site/api/v1/upload/create-resumable-upload",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -83,7 +82,7 @@ export default function UploadPage() {
         const uploadUrl = startRes.headers.get("Location");
         if (!uploadUrl) throw new Error("Failed to start upload");
 
-        // 3️⃣ Upload chunks
+        // 3️⃣ Upload chunks with concurrency (parallel chunks)
         let offset = 0;
         const startTime = Date.now();
 
@@ -117,40 +116,34 @@ export default function UploadPage() {
         setStatus((s) => ({ ...s, [pathKey]: "done" }));
         return;
       } catch (err) {
-        console.log(`${pathKey} attempt ${attempt} failed`);
+        console.warn(`${pathKey} attempt ${attempt} failed`, err);
         if (attempt === MAX_RETRIES) setStatus((s) => ({ ...s, [pathKey]: "not_uploaded" }));
       }
     }
   };
 
-  // Upload a batch with concurrency
-  const uploadBatch = async (batch) => {
-    let queue = [...batch];
-    while (queue.length > 0) {
-      const active = queue.splice(0, CONCURRENCY);
-      await Promise.all(active.map(uploadFileWithRetry));
-    }
-  };
-
-  // Start uploading all files in batches
+  // Smart parallel uploader
   const startUpload = async () => {
-    for (let i = 0; i < files.length; i += BATCH_SIZE) {
-      const batch = files.slice(i, i + BATCH_SIZE);
-      await uploadBatch(batch);
-      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
-    }
+    const queue = [...files];
 
-    // Retry remaining files asynchronously after all batches
-    const remaining = files.filter(
-      (f) => status[f.webkitRelativePath || f.name] === "not_uploaded"
-    );
+    const workers = new Array(CONCURRENCY).fill(null).map(async () => {
+      while (queue.length > 0) {
+        const file = queue.shift();
+        if (!file) continue;
+        await uploadFile(file);
+      }
+    });
+
+    await Promise.all(workers);
+
+    // Retry any failed files
+    const remaining = files.filter((f) => status[f.webkitRelativePath || f.name] === "not_uploaded");
     if (remaining.length > 0) {
       console.log(`Retrying remaining ${remaining.length} files`);
-      await Promise.all(remaining.map(uploadFileWithRetry));
+      await Promise.all(remaining.map(uploadFile));
     }
   };
 
-  // Auto-start upload when files are added
   useEffect(() => {
     if (files.length > 0) startUpload();
   }, [files]);
