@@ -62,34 +62,17 @@ export default function Login() {
           <Image
             src="/login/Login-Image.svg"
             alt="Hero"
-            width={200}
-            height={200}
+            width={360}
+            height={360}
             priority
-            className="h-full w-full object-cover"
           />
-
-          <h1 className="text-5xl font-bold mb-4 bg-black/80 bg-clip-text text-transparent">
-            Welcome to the Future
+          <h1 className="text-4xl text-white font-bold mt-8 bg-black/80 bg-clip-text text-transparent">
+            Welcome to 
+            <span className=""> D2R6</span>
           </h1>
-
-          <p className="text-xl text-black/70 leading-relaxed max-w-md mb-8">
-            Powering Automation Workflows with cutting-edge technology and seamless integration.
+          <p className="text-base text-white leading-relaxed max-w-md mb-8">
+            Engineering Automation that breaks barriers.
           </p>
-
-          <div className="grid grid-cols-1 gap-4 text-sm text-black/70 max-w-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
-              <span>Advanced workflow automation</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full" />
-              <span>Real-time collaboration</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-gray-400 rounded-full" />
-              <span>Enterprise-grade security</span>
-            </div>
-          </div>
         </div>
 
 
@@ -98,21 +81,18 @@ export default function Login() {
       {/* Right side - login form */}
       <div className="relative flex items-center justify-center flex-col w-full lg:w-[40%] bg-[#f9fffb] px-6 py-12">
         <div className="absolute left-6 top-6 flex gap-2 items-center">
-          <Image src="/login_img.svg" alt="Logo" width={500} height={500} className="h-20 w-20 object-contain" />
-          <span className="h-12 border-[0.5px] border-black"></span>
-          <span className="font-thin text-[30px] ml-2 tracking-widest">Automation AI</span>
-
+          <Image src="/login_img.svg" alt="Logo" width={36} height={36}/>
         </div>
         <div className="w-full max-w-md backdrop-blur-sm rounded-xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Enterprise Hub
+          <div className="text-left mb-8">
+            <h1 className="text-2xl font-bold">
+              Your AI Automation Studio
             </h1>
 
-            <p className="text-gray-600 text-base mt-2">Login to Guru Accounting NY Account</p>
+            <p className="text-gray-500 text-lg">Login to your organization account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-2" noValidate>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-md">
                 {error}
@@ -120,32 +100,32 @@ export default function Login() {
             )}
 
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-500">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter your email address..."
                   value={formData.email}
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 bg-white border border-gray-200 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 bg-white border border-gray-200 text-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
                   autoComplete="email"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-500">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                 <input
                   id="password"
                   name="password"
@@ -155,14 +135,14 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 pr-10 bg-white border text-gray-500 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-400"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -171,7 +151,7 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-500">
                 Select Role
               </label>
               <select
