@@ -18,6 +18,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Sun, Moon } from "lucide-react";
 import ImmigrationBanner from "@/components/customs/immigration-services/ImmigrationBanner";
 import ImmigrationSearchUI from "@/components/customs/immigration-services/ImmigrationSearchUI";
+import TopBar from "@/components/customs/top-bar/Topbar";
 
 export default function ImmigrationPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -29,36 +30,8 @@ export default function ImmigrationPage() {
       }`}
     >
       {/* HEADER */}
-      <header
-        className={`flex justify-between py-2 px-6 shrink-0 items-center gap-2 transition ${
-          darkMode ? "bg-[#1A1B1E]" : "bg-white"
-        }`}
-      >
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">Immigartion Services</BreadcrumbLink>
-              </BreadcrumbItem>
-
-              <BreadcrumbSeparator className="hidden md:block" />
-
-              <BreadcrumbItem>
-                <BreadcrumbPage>Fetching</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-
-          <ProfileNav />
-        </div>
-      </header>
+       <TopBar />
+  
 
       {/* MAIN CONTENT  */}
       <main

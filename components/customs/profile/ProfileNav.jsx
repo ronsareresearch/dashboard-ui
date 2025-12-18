@@ -5,7 +5,7 @@ import axios from 'axios'
 import { LogOut, UserIcon } from 'lucide-react'
 import React, { useEffect } from 'react'
 
-const ProfileNav = ({ handleLogout }) => {
+const ProfileNav = () => {
   const [userData, setUserData] = React.useState(null);
 
   useEffect(() => {
@@ -22,6 +22,33 @@ const ProfileNav = ({ handleLogout }) => {
     }
     fun();
   }, []);
+
+
+    const handleLogout = async () => {
+      try {
+        const res = await fetch(`${AUTH_SERVER}/logout`, {
+          method: "POST",
+          credentials: "include", // Sends cookies
+        });
+  
+        if (!res.ok) {
+          // If the response status is not 2xx, throw an error
+          const errorData = await res.json();
+          console.error("Logout failed:", errorData);
+          alert(`Logout failed: ${errorData.message || "Unknown error"}`);
+          return;
+        }
+  
+        const data = await res.json();
+        console.log("Logout success:", data);
+  
+        // Redirect only if logout was successful
+        router.push("/login");
+      } catch (err) {
+        console.error("Logout failed:", err);
+        alert(`Logout failed: ${err.message || "Server error"}`);
+      }
+    };
 
   return (
     <Popover>

@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Sun, Moon } from "lucide-react";
+import TopBar from "@/components/customs/top-bar/Topbar";
 
 export default function KnowledgePage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -27,48 +28,8 @@ export default function KnowledgePage() {
       }`}
     >
       {/* HEADER */}
-      <header
-        className={`flex justify-between py-2 px-6 shrink-0 items-center gap-2 transition ${
-          darkMode ? "bg-[#1A1B1E]" : "bg-white"
-        }`}
-      >
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-              </BreadcrumbItem>
-
-              <BreadcrumbSeparator className="hidden md:block" />
-
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-          {/* 🌗 Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm shadow-md transition ${
-              darkMode
-                ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-            }`}
-          >
-            {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            {darkMode ? "Light" : "Dark"}
-          </button>
-
-          <ProfileNav />
-        </div>
-      </header>
+            <TopBar />
+      
 
       {/* MAIN CONTENT  */}
       <main

@@ -57,15 +57,25 @@ export default function Login() {
         {/* <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" /> */}
         {/* <div className="absolute top-20 left-20 w-72 h-72 bg-[#dfe6e9]/20 rounded-full blur-3xl animate-pulse" /> */}
         {/* <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" /> */}
-        <div className="z-10 flex flex-col justify-center items-center text-center p-12 text-white">
-          {/* <Sparkles className="w-16 h-16 text-black/70 mb-4" /> */}
+
+        <div className="z-10 flex flex-col items-center text-center p-12 text-white">
+          <Image
+            src="/login/Login-Image.svg"
+            alt="Hero"
+            width={200}
+            height={200}
+            priority
+            className="h-full w-full object-cover"
+          />
 
           <h1 className="text-5xl font-bold mb-4 bg-black/80 bg-clip-text text-transparent">
             Welcome to the Future
           </h1>
+
           <p className="text-xl text-black/70 leading-relaxed max-w-md mb-8">
             Powering Automation Workflows with cutting-edge technology and seamless integration.
           </p>
+
           <div className="grid grid-cols-1 gap-4 text-sm text-black/70 max-w-sm">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-green-400 rounded-full" />
@@ -81,6 +91,8 @@ export default function Login() {
             </div>
           </div>
         </div>
+
+
       </div>
 
       {/* Right side - login form */}

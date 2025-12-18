@@ -1,5 +1,6 @@
 "use client";
 
+import TopBar from "@/components/customs/top-bar/Topbar";
 import { useState, useRef, useEffect } from "react";
 
 // Helper to recursively traverse folders
@@ -163,37 +164,42 @@ export default function UploadPage() {
   const notUploadedCount = files.filter((f) => status[f.relativePath] === "not_uploaded").length;
 
   return (
-    <div className="flex items-center justify-center py-10">
-      <div className="p-5 w-full max-w-[800px] font-sans">
-        <h1 className="text-2xl font-bold mb-4">Upload Large Files & Folders</h1>
+<div>
+  <TopBar />
+  <div className="min-h-screen flex items-center justify-center">
+  <div className="p-5 w-full max-w-[800px] font-sans">
+    <h1 className="text-2xl font-bold mb-4 text-center">
+      Upload Large Files & Folders
+    </h1>
 
-        <div
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-          onClick={() => fileInputRef.current.click()}
-          className="border-2 border-dashed border-gray-400 rounded-lg p-10 text-center cursor-pointer mb-4 hover:bg-gray-50 transition"
-        >
-          Drag & Drop files/folders here or click to select
+    <div
+      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onClick={() => fileInputRef.current.click()}
+      className="border-2 border-dashed border-gray-400 rounded-lg p-10 text-center cursor-pointer mb-4 hover:bg-gray-50 transition"
+    >
+      Drag & Drop files/folders here or click to select
+    </div>
+
+    <input
+      type="file"
+      multiple
+      webkitdirectory="true"
+      directory="true"
+      ref={fileInputRef}
+      className="hidden"
+      onChange={handleSelectFiles}
+    />
+
+    {files.length > 0 && (
+      <>
+        <div className="mb-4 text-sm text-gray-700">
+          <div><strong>Total files:</strong> {files.length}</div>
+          <div><strong>Not uploaded:</strong> {notUploadedCount}</div>
         </div>
 
-        <input
-          type="file"
-          multiple
-          webkitdirectory="true"
-          directory="true"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleSelectFiles}
-        />
-
-        {files.length > 0 && (
-          <div className="mb-4 text-sm text-gray-700">
-            <div><strong>Total files:</strong> {files.length}</div>
-            <div><strong>Not uploaded:</strong> {notUploadedCount}</div>
-          </div>
-        )}
-
-        <div className="mt-5 space-y-3">
+        {/* SCROLLABLE FILE LIST */}
+        <div className="mt-5 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
           {files.map(({ file, relativePath }, index) => {
             const currentStatus = status[relativePath];
             return (
@@ -208,12 +214,16 @@ export default function UploadPage() {
                 }`}
               >
                 <div className="flex items-center">
-                  <span className="w-[300px] truncate font-medium text-gray-800 text-sm" title={relativePath}>
+                  <span
+                    className="w-[300px] truncate font-medium text-gray-800 text-sm"
+                    title={relativePath}
+                  >
                     {index + 1}. {relativePath}
                   </span>
+
                   <div className="flex-1 h-2 bg-gray-200 rounded mx-2 overflow-hidden">
                     <div
-                      className={`h-full rounded transition-all duration-300 ${
+                      className={`h-full ${
                         currentStatus === "done"
                           ? "bg-green-500"
                           : currentStatus === "not_uploaded"
@@ -223,6 +233,7 @@ export default function UploadPage() {
                       style={{ width: `${progress[relativePath]?.percent || 0}%` }}
                     />
                   </div>
+
                   <span className="w-20 text-right text-xs">
                     {currentStatus === "done"
                       ? "✔️"
@@ -235,7 +246,11 @@ export default function UploadPage() {
             );
           })}
         </div>
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
+</div>
+
   );
 }

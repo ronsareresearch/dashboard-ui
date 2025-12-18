@@ -241,30 +241,37 @@ export function Sidebar({
 
 
 
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}) {
+function SidebarTrigger({ className = "", onClick, ...props }) {
   const { toggleSidebar } = useSidebar()
 
   return (
-    <Button
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
+    <button
+      type="button"
+      aria-label="Toggle Sidebar"
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
-      {...props}>
-      <PanelLeftIcon className="" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
+      className={`
+        h-6 w-6
+        flex items-center justify-center
+        rounded-md
+        bg-transparent
+        text-white
+        hover:bg-white hover:p-1 hover:text-black
+        transition-colors duration-200
+        ${className}
+      `}
+      {...props}
+    >
+      <PanelLeftIcon className="h-6 w-6" />
+    </button>
+  )
 }
+
+
+export default SidebarTrigger
+
 
 function SidebarRail({
   className,

@@ -1,6 +1,7 @@
 "use client";
 
 import { AI_MODEL_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
+import TopBar from "@/components/customs/top-bar/Topbar";
 import { User2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -241,8 +242,8 @@ const wsRef = useRef(null);
     // UI
     // ---------------------------
     return (
-        <div className="h-screen w-full flex bg-gray-800">
-
+        <div className="h-screen w-full flex flex-col bg-gray-800">
+            <TopBar />
             {/* MAIN WRAPPER (Dynamic Split: 50% / 50%) */}
             <div className={`flex bg-white overflow-hidden w-full`}>
 

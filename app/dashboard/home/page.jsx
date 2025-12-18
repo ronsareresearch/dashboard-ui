@@ -3,6 +3,7 @@
 import { AUTH_SERVER } from "@/app/constant/constant";
 import AiModel from "@/components/customs/ai-model-components/AiModel";
 import ProfileNav from "@/components/customs/profile/ProfileNav";
+import TopBar from "@/components/customs/top-bar/Topbar";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
@@ -77,62 +78,12 @@ export default function HomePage() {
   const router = useRouter();
   const [status, setStatus] = useState("active"); // "active" or "offline"
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch(`${AUTH_SERVER}/logout`, {
-        method: "POST",
-        credentials: "include", // Sends cookies
-      });
-
-      if (!res.ok) {
-        // If the response status is not 2xx, throw an error
-        const errorData = await res.json();
-        console.error("Logout failed:", errorData);
-        alert(`Logout failed: ${errorData.message || "Unknown error"}`);
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Logout success:", data);
-
-      // Redirect only if logout was successful
-      router.push("/login");
-    } catch (err) {
-      console.error("Logout failed:", err);
-      alert(`Logout failed: ${err.message || "Server error"}`);
-    }
-  };
 
 
   // top to bottom nav devider 
   return (
     <div className="flex flex-col h-screen bg-gray-800">
-      <div className="bg-[#657c6a] pr-4  flex justify-between">
-
-        <div className="text-3xl font-bold h-[68px] flex items-center justify-center gap-x-4 pl-4 border-l border-gray-400">
-
-          <div>
-            <SidebarTrigger className="" />
-            {/* 
-          <input
-            type="text"
-            // value={status}
-            // onChange={(e) => setStatus(e.target.value)}
-            className={`px-3 py-4 w-[1200px] rounded-sm text-sm font-medium focus:outline-none bg-gray-50 text-gray-800`}
-            placeholder="Search services..."
-            /> */}
-          </div>
-
-        </div>
-        <div className="flex items-center justify-center gap-4">
-          <Bell className="w-6 h-6 text-white cursor-pointer" />
-
-          <ProfileNav
-            handleLogout={handleLogout}
-          />
-        </div>
-
-      </div>
+      <TopBar />
       {/* MAIN */}
       <main className="flex flex-1 overflow-hidden">
 
