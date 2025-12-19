@@ -66,7 +66,7 @@ export default function Login() {
             height={360}
             priority
           />
-          <h1 className="text-4xl text-white font-bold mt-8 bg-black/80 bg-clip-text text-transparent">
+          <h1 className="text-4xl text-white font-bold mt-8 bg-black/80 bg-clip-text">
             Welcome to Loom
           </h1>
           <p className="text-base text-white leading-relaxed max-w-md mb-8">
@@ -113,7 +113,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 bg-white border border-gray-200 text-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 bg-white border border-gray-200 text-gray-500 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
                   autoComplete="email"
                 />
               </div>
@@ -134,7 +134,7 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="w-full h-12 pl-10 pr-10 bg-white border text-gray-500 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                  className="w-full h-12 pl-10 pr-10 bg-white border text-gray-500 border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
                   autoComplete="current-password"
                 />
                 <button
@@ -160,7 +160,7 @@ export default function Login() {
                 // onChange={handleChange}
                 required
                 disabled={isLoading}
-                className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dfe6e9]"
+                className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
               >
                 <option value="Admin">Admin</option>
                 <option value="Member">Member</option>
@@ -174,7 +174,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 rounded-md bg-black hover:from-[#dfe6e9] hover:to-blue-700 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="mt-4 w-full h-12 rounded-md bg-black hover:from-[#dfe6e9] hover:to-blue-700 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">

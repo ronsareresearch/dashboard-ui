@@ -141,7 +141,7 @@ export default function HomePage() {
         {/* <AiModel /> */}
         <div className="w-[25%] h-full p-4 bg-gray-50 backdrop-blur-xl flex flex-col">
           {/* show user demo list */}
-          {
+          {/* {
             users.map((user, index) => (
               <div className="bg-white rounded-lg p-4 mb-4 flex gap-4 items-start"
                 key={index}
@@ -160,7 +160,7 @@ export default function HomePage() {
                 </div>
               </div>
             ))
-          }
+          } */}
 
         </div>
 

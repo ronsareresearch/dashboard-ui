@@ -31,84 +31,69 @@ const rawNav = {
     {
       title: "Home",
       icon: SquareTerminal,
-      permissionKey: "main",
+      permissionKey: "home",
       items: [
-        { title: "Home", url: "/dashboard/home", key: "home" },
+        { title: "Dashboard", url: "/dashboard/home", key: "dashboard" },
         { title: "Knowledge Base", url: "/dashboard/knowledge-base", key: "knowledge_base" },
-        { title: "upload-file", url: "/dashboard/upload-file", key: "knowledge_base" },
       ],
     },
-        {
+    {
       title: "Workspaces",
       icon: Settings2,
-      permissionKey: "emails",
+      permissionKey: "workspaces",
       items: [
-        { title: "Emails", url: "/dashboard/email-inbox", key: "inbox" },
+        { title: "Doc Storage", url: "/dashboard/upload-file", key: "doc_storage" },
+        { title: "Emails", url: "/dashboard/email-inbox", key: "emails" },
         { title: "WhatsApp", url: "/dashboard/whatsapp", key: "whatsapp" },
       ],
     },
     {
       title: "Services",
       icon: Bot,
-      permissionKey: "customer",
+      permissionKey: "services",
       items: [
-        { title: "Immigration Services", url: "/dashboard/immigration-services", key: "immigration_services" },
+        {
+          title: "Immigration Services",
+          url: "/dashboard/immigration-services",
+          key: "immigration_services",
+        },
       ],
     },
-
-    // {
-    //   title: "Documents",
-    //   icon: BookOpen,
-    //   permissionKey: "documents",
-    //   items: [
-    //     { title: "Forms", url: "/dashboard/user-profile", key: "forms" },
-    //     { title: "Vault", url: "/dashboard/user-actions", key: "vault" },
-    //     { title: "Search", url: "/dashboard/search", key: "search" },
-    //   ],
-    // },
     {
       title: "User Management",
       icon: Settings2,
       permissionKey: "user_management",
       items: [
         { title: "General", url: "/dashboard/general", key: "general" },
-        { title: "Settings", url: "#", key: "settings" },
+        { title: "Settings", url: "/dashboard/settings", key: "settings" },
       ],
     },
   ],
-
-  projects: [
+    projects: [
     { name: "Docs", icon: Frame, key: "docs" },
     { name: "Marketing Material", icon: PieChart, key: "marketing_material" },
     { name: "Holidays", icon: Map, key: "holidays" },
   ],
 };
 
-// ✅ FILTER ENGINE
+
 const filterNav = (nav, permissions) => {
   return nav
     .map((group) => {
-      let groupPerm = permissions?.[group.permissionKey];
+      const groupPerm = permissions?.[group.permissionKey];
+      if (!groupPerm) return null;
 
-      // ✅ TEMP FIX: If main.whatsapp is true → force allow emails group
-      if (permissions?.main?.whatsapp === true && group.permissionKey === "emails") {
-        groupPerm = {
-          inbox: true,
-          whatsapp: true,
-        };
-      }
-
-      // normal filtering
-      const allowedItems = group.items.filter(
-        (item) => groupPerm?.[item.key]
+      const items = group.items.filter(
+        (item) => groupPerm[item.key] === true
       );
 
-      if (!allowedItems.length) return null;
+      if (!items.length) return null;
 
-      return { ...group, items: allowedItems };
+      return { ...group, items };
     })
     .filter(Boolean);
 };
+
 
 
 export function AppSidebar(props) {
@@ -133,7 +118,8 @@ export function AppSidebar(props) {
       <SidebarHeader>
         <Branding />
       </SidebarHeader>
-      <div className="h-[200px]"></div>
+      <div className="h-[200px]">
+      </div>
       <SidebarContent>
         <NavMain items={filteredNav} />
         <NavProjects projects={filteredProjects} />

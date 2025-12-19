@@ -3,14 +3,15 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
 import axios from 'axios'
 import { LogOut, UserIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 
 const ProfileNav = () => {
   const [userData, setUserData] = React.useState(null);
-
+  const router = useRouter();
   useEffect(() => {
     const fun = async () => {
-      try {
+  try {
         const res = await axios.get(`${AUTH_SERVER}/me`, {
           withCredentials: true,
         });

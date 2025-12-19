@@ -164,7 +164,7 @@ export default function UploadPage() {
   const notUploadedCount = files.filter((f) => status[f.relativePath] === "not_uploaded").length;
 
   return (
-<div>
+<div className="bg-white">
   <TopBar />
   <div className="min-h-screen flex items-center justify-center">
   <div className="p-5 w-full max-w-[800px] font-sans">

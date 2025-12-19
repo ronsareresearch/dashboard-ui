@@ -20,7 +20,7 @@ export function Branding() {
         {/* 🔒 Logo: clickable */}
         <div className="h-10 w-[120px] shrink-0 flex items-center pointer-events-auto">
           <Image
-            src="/logo-white.svg"
+            src="/kyte-logo-W.svg"
             alt="Logo"
             width={120}
             height={40}
