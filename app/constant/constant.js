@@ -10,7 +10,7 @@ export const WS_URL = "wss://whatsapp.guruaccounting.com/messages/ws";
 export const AI_MODEL_SERVER = "https://ai.guruaccounting.com/api/v1";
 export const AUTH_SERVER = "https://auth.guruaccounting.com/api/v1";
 export const WHATSAPP_SERVER = "https://whatsapp.guruaccounting.com/api/v1";
-export const EMAIL_SERVER = "https://email.guruaccounting.com/api/v1";
+export const EMAIL_SERVER = "https://emails.guruaccounting.com/api/v1";
 
 // export const API_BASE_URL = "https://auth.ronsare.site/api/v1";
 // export const WS_URL = "wss://whatsapp.ronsare.site/messages/ws";
