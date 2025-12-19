@@ -67,8 +67,7 @@ export default function Login() {
             priority
           />
           <h1 className="text-4xl text-white font-bold mt-8 bg-black/80 bg-clip-text text-transparent">
-            Welcome to 
-            <span className=""> D2R6</span>
+            Welcome to Loom
           </h1>
           <p className="text-base text-white leading-relaxed max-w-md mb-8">
             Engineering Automation that breaks barriers.
@@ -81,7 +80,7 @@ export default function Login() {
       {/* Right side - login form */}
       <div className="relative flex items-center justify-center flex-col w-full lg:w-[40%] bg-[#f9fffb] px-6 py-12">
         <div className="absolute left-6 top-6 flex gap-2 items-center">
-          <Image src="/login_img.svg" alt="Logo" width={36} height={36}/>
+          <Image src="/kyte-logo.svg" alt="Logo" width={36} height={36}/>
         </div>
         <div className="w-full max-w-md backdrop-blur-sm rounded-xl p-8">
           <div className="text-left mb-8">
