@@ -80,7 +80,7 @@ const ProfileNav = () => {
           {/* Avatar */}
           <div className="relative">
             <div className="h-10 w-10 border shadow-inner rounded-full bg-gray-300 flex items-center justify-center">
-              <UserIcon className="w-6 h-6 text-black" />
+              <UserIcon className="w-6 h-6 text-prime-black" />
             </div>
             {/* <span
               className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-orange-300"

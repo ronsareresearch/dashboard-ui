@@ -145,7 +145,7 @@ export function Sidebar({
         data-slot="sidebar"
         className={cn(
           "bg-gray-50 flex h-full w-(--sidebar-width) flex-col",
-          "**:text-[#202426] [&_svg]:text-[#202426] [&_*:hover]:text-black",
+          "**:text-prime-black [&_svg]:text-prime-black [&_*:hover]:text-prime-black",
           className
         )}
         {...props}
@@ -166,7 +166,7 @@ export function Sidebar({
           style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE }}
           className={cn(
             "bg-gray-50 w-(--sidebar-width) p-0 [&>button]:hidden",
-            "**:text-[#202426] [&_svg]:text-[#202426] [&_*:hover]:text-black"
+            "**:text-prime-black [&_svg]:text-prime-black [&_*:hover]:text-prime-black"
           )}
         >
           <SheetHeader className="sr-only">
@@ -228,7 +228,7 @@ export function Sidebar({
             "group-data-[variant=floating]:rounded-lg",
             "group-data-[variant=floating]:border",
             "group-data-[variant=floating]:shadow-sm",
-            "**:text-[#202426] [&_svg]:text-[#202426] [&_*:hover]:text-black"
+            "**:text-prime-black [&_svg]:text-prime-black [&_*:hover]:text-prime-black"
           )}
         >
           {children}
@@ -258,7 +258,7 @@ function SidebarTrigger({ className = "", onClick, ...props }) {
         rounded-md
         bg-transparent
         text-white
-        hover:bg-white hover:p-1 hover:text-black
+        hover:bg-white hover:p-1 hover:text-prime-black
         transition-colors duration-200
         ${className}
       `}

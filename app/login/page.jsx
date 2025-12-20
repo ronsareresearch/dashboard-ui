@@ -160,7 +160,7 @@ export default function Login() {
                 // onChange={handleChange}
                 required
                 disabled={isLoading}
-                className="w-full h-12 pl-10 pr-10 bg-white border text-black border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
+                className="w-full h-12 pl-10 pr-10 bg-white border text-prime-black border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
               >
                 <option value="Admin">Admin</option>
                 <option value="Member">Member</option>

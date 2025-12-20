@@ -287,7 +287,7 @@ const wsRef = useRef(null);
                             <button
                                 onClick={prevPage}
                                 disabled={page === 1}
-                                className="px-3 py-1 bg-gray-300 text-black rounded disabled:opacity-50"
+                                className="px-3 py-1 bg-gray-300 text-prime-black rounded disabled:opacity-50"
                             >
                                 Previous
                             </button>
@@ -295,7 +295,7 @@ const wsRef = useRef(null);
                             <button
                                 onClick={nextPage}
                                 disabled={page * pageSize >= totalEmails}
-                                className="px-3 py-1 bg-gray-300 text-black rounded disabled:opacity-50"
+                                className="px-3 py-1 bg-gray-300 text-prime-black rounded disabled:opacity-50"
                             >
                                 Next
                             </button>

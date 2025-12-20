@@ -118,8 +118,8 @@ export function AppSidebar(props) {
       <SidebarHeader>
         <Branding />
       </SidebarHeader>
-      <div className="h-[200px]">
-      </div>
+      {/* <div className="h-42 flex items-center justify-center">
+      </div> */}
       <SidebarContent>
         <NavMain items={filteredNav} />
         <NavProjects projects={filteredProjects} />

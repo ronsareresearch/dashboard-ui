@@ -182,12 +182,12 @@ export default function ChatInterface({ darkMode }) {
           <button
             onClick={sendMessage}
             className={`p-2 rounded-full transition ${darkMode
-                ? "bg-white text-black hover:bg-[#1F4CD8]"
+                ? "bg-white text-prime-black hover:bg-[#1F4CD8]"
                 : "bg-gray-800 hover:bg-[#1F4CD8]"
               }`}
           >
             <ArrowUp
-              className={`${darkMode ? "text-black" : "text-white"} h-5 w-5`}
+              className={`${darkMode ? "text-prime-black" : "text-white"} h-5 w-5`}
             />
           </button>
         </div>

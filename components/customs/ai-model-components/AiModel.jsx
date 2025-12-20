@@ -391,7 +391,7 @@ const uploadAudio = async (audioBlob) => {
                   responses may not be fully secure.
                 </p>
                 <button
-                  className="w-full mt-2 py-2 bg-white text-black text-sm rounded-full font-semibold"
+                  className="w-full mt-2 py-2 bg-white text-prime-black text-sm rounded-full font-semibold"
                   onClick={() => setShowPromo(false)}
                 >
                   Got it
@@ -405,7 +405,7 @@ const uploadAudio = async (audioBlob) => {
             <div className="bg-[#111] rounded-full px-4 py-3 flex items-center gap-3">
               {/* NEW: Upload trigger */}
               <button
-                className="text-black rounded-full p-2 text-xl bg-white/20"
+                className="text-prime-black rounded-full p-2 text-xl bg-white/20"
                 onClick={() => fileInputRef.current.click()}
               >
                 <Plus />
@@ -439,7 +439,7 @@ const uploadAudio = async (audioBlob) => {
               </button>
               <button
                 onClick={sendMessage}
-                className="text-black rounded-full p-2 text-xl bg-white/20"
+                className="text-prime-black rounded-full p-2 text-xl bg-white/20"
               >
                 <ArrowUp />
               </button>
