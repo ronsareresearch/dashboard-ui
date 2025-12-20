@@ -20,9 +20,9 @@ export default function TopBar() {
     >
       {/* LEFT SECTION */}
       <div className="flex items-center gap-x-4 pl-4 ">
-        {/* <div>
+        <div>
           <SidebarTrigger />
-        </div> */}
+        </div>
         <div>
 
           <div className="pl-4 flex flex-row items-center gap-4">

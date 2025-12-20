@@ -15,11 +15,10 @@ import {
   AlertCircle,
   Filter,
   RefreshCw,
-  Eye,
   List
 } from "lucide-react";
-import CreteUser from "./CreteUser";
 import ShowExternalEmails from "./ShowExternalEmails";
+import CreateUser from "./CreteUser";
 
 const API_BASE_URL = AUTH_SERVER;
 
@@ -39,10 +38,20 @@ const UserProfile = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    first_name: "",
+    last_name: "",
     role: "user",
     access: "active",
-    permissions: {},
+    permissions: {
+      main: { home: false, whatsapp: false, knowledge_base: false },
+      customer: { immigration_services: false },
+      emails: { inbox: false },
+      documents: { forms: false, vault: false, search: false },
+      user_management: { general: false, settings: false },
+      resources: { docs: false, marketing_material: false, holidays: false },
+    },
     external_emails: [],
+    phone_number: "",
   });
   const [isGmailList, setIsGmailList] = useState(false);
 
@@ -65,10 +74,12 @@ const UserProfile = () => {
   const handleSearch = (e) => setSearch(e.target.value);
 
   const filteredUsers = users.filter((u) => {
-    const matchesSearch = u.email.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch =
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.role.toLowerCase().includes(search.toLowerCase());
     const matchesRole = selectedRole === "all" || u.role === selectedRole;
-    const matchesAccess = selectedAccess === "all" || u.access === selectedAccess;
+    const matchesAccess =
+      selectedAccess === "all" || u.access === selectedAccess;
     return matchesSearch && matchesRole && matchesAccess;
   });
 
@@ -77,10 +88,20 @@ const UserProfile = () => {
     setFormData({
       email: "",
       password: "",
+      first_name: "",
+      last_name: "",
       role: "user",
       access: "active",
-      permissions: {},
+      permissions: {
+        main: { home: false, whatsapp: false, knowledge_base: false },
+        customer: { immigration_services: false },
+        emails: { inbox: false },
+        documents: { forms: false, vault: false, search: false },
+        user_management: { general: false, settings: false },
+        resources: { docs: false, marketing_material: false, holidays: false },
+      },
       external_emails: [],
+      phone_number: "",
     });
     setShowModal(true);
   };
@@ -90,10 +111,13 @@ const UserProfile = () => {
     setFormData({
       email: user.email,
       password: "",
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
       role: user.role,
       access: user.access,
       permissions: user.permissions,
       external_emails: user.external_emails,
+      phone_number: user.phone_number || "",
     });
     setShowModal(true);
   };
@@ -116,36 +140,47 @@ const UserProfile = () => {
 
   const getAccessIcon = (access) => {
     switch (access) {
-      case "active": return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "blocked": return <XCircle className="w-5 h-5 text-red-500" />;
-      case "restricted": return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      default: return <CheckCircle className="w-5 h-5 text-gray-400" />;
+      case "active":
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case "blocked":
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      case "restricted":
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+      default:
+        return <CheckCircle className="w-5 h-5 text-gray-400" />;
     }
   };
 
   const getRoleIcon = (role) => {
     switch (role) {
-      case "admin": return <Shield className="w-5 h-5 text-purple-500" />;
-      case "user": return <User className="w-5 h-5 text-blue-500" />;
-      default: return <User className="w-5 h-5 text-gray-400" />;
+      case "admin":
+        return <Shield className="w-5 h-5 text-purple-500" />;
+      case "user":
+        return <User className="w-5 h-5 text-blue-500" />;
+      default:
+        return <User className="w-5 h-5 text-gray-400" />;
     }
   };
 
-      const addEmail = () => {
-        window.location.href = `${EMAIL_SERVER}/auth/google`;
-    };
-    
+  const addEmail = () => {
+    window.location.href = `${EMAIL_SERVER}/auth/google`;
+  };
 
   return (
     <div className="min-h-screen w-full bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-        <p className="text-gray-600">Manage user accounts, roles, and access permissions</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          User Management
+        </h1>
+        <p className="text-gray-600">
+          Manage user accounts, roles, and access permissions
+        </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        {/* Total Users */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -157,12 +192,14 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* Active Users */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Active Users</p>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.access === "active").length}
+                {users.filter((u) => u.access === "active").length}
               </p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
@@ -170,12 +207,14 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* Admins */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Admins</p>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role === "admin").length}
+                {users.filter((u) => u.role === "admin").length}
               </p>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
@@ -183,12 +222,14 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* Restricted */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Restricted</p>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.access === "restricted").length}
+                {users.filter((u) => u.access === "restricted").length}
               </p>
             </div>
             <div className="p-3 bg-yellow-50 rounded-lg">
@@ -196,9 +237,11 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* Add Gmail */}
         <button
           className="relative flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg bg-yellow-100/50 border border-gray-300 hover:shadow-md hover:bg-gray-50 transition-all text-gray-900 text-sm font-bold"
-          onClick={() => addEmail()}
+          onClick={addEmail}
         >
           {/* Google Icon */}
           <svg
@@ -206,10 +249,22 @@ const UserProfile = () => {
             viewBox="0 0 533.5 544.3"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path d="M533.5 278.4c0-17.6-1.6-34.5-4.7-51H272v96.6h146.9c-6.3 33.7-25.1 62.3-53.6 81.5v67.6h86.7c50.6-46.6 79.5-115.2 79.5-194.7z" fill="#4285F4"/>
-            <path d="M272 544.3c72.6 0 133.6-24.1 178.1-65.6l-86.7-67.6c-24.1 16.2-55 25.8-91.4 25.8-70 0-129.4-47.2-150.6-110.3H33.5v69.3c44.2 87 134.7 148.4 238.5 148.4z" fill="#34A853"/>
-            <path d="M121.5 320.6c-10.3-30.9-10.3-64.8 0-95.7v-69.3H33.5c-40.5 79-40.5 173.4 0 252.4l88-87.4z" fill="#FBBC05"/>
-            <path d="M272 107.5c37.6-.6 71.2 13 97.6 38.2l73-73C405.1 24.1 344.1 0 272 0 168.2 0 77.7 61.4 33.5 148.4l88 69.3C142.6 154.7 202 107.5 272 107.5z" fill="#EA4335"/>
+            <path
+              d="M533.5 278.4c0-17.6-1.6-34.5-4.7-51H272v96.6h146.9c-6.3 33.7-25.1 62.3-53.6 81.5v67.6h86.7c50.6-46.6 79.5-115.2 79.5-194.7z"
+              fill="#4285F4"
+            />
+            <path
+              d="M272 544.3c72.6 0 133.6-24.1 178.1-65.6l-86.7-67.6c-24.1 16.2-55 25.8-91.4 25.8-70 0-129.4-47.2-150.6-110.3H33.5v69.3c44.2 87 134.7 148.4 238.5 148.4z"
+              fill="#34A853"
+            />
+            <path
+              d="M121.5 320.6c-10.3-30.9-10.3-64.8 0-95.7v-69.3H33.5c-40.5 79-40.5 173.4 0 252.4l88-87.4z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M272 107.5c37.6-.6 71.2 13 97.6 38.2l73-73C405.1 24.1 344.1 0 272 0 168.2 0 77.7 61.4 33.5 148.4l88 69.3C142.6 154.7 202 107.5 272 107.5z"
+              fill="#EA4335"
+            />
           </svg>
 
           Add Gmail
@@ -218,15 +273,13 @@ const UserProfile = () => {
           <span
             className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
             onClick={(e) => {
-              e.stopPropagation(); // ✅ Prevents triggering addEmail
+              e.stopPropagation();
               setIsGmailList(true);
             }}
           >
             <List className="w-3.5 h-3.5" />
           </span>
         </button>
-
-
       </div>
 
       {/* Controls */}
@@ -273,7 +326,6 @@ const UserProfile = () => {
 
             <button
               onClick={fetchUsers}
-              
               className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
@@ -348,12 +400,15 @@ const UserProfile = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {getAccessIcon(u.access)}
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${u.access === "active"
-                            ? "bg-green-100 text-green-800"
-                            : u.access === "blocked"
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            u.access === "active"
+                              ? "bg-green-100 text-green-800"
+                              : u.access === "blocked"
                               ? "bg-red-100 text-red-800"
                               : "bg-yellow-100 text-yellow-800"
-                          } capitalize`}>
+                          } capitalize`}
+                        >
                           {u.access}
                         </span>
                       </div>
@@ -390,7 +445,7 @@ const UserProfile = () => {
 
       {/* Modal */}
       {showModal && (
-        <CreteUser
+        <CreateUser
           show={showModal}
           onClose={() => setShowModal(false)}
           formData={formData}
@@ -401,14 +456,12 @@ const UserProfile = () => {
         />
       )}
 
-      {
-        isGmailList && (
-          <ShowExternalEmails
+      {/* Gmail List Modal */}
+      {isGmailList && (
+        <ShowExternalEmails
           setIsGmailList={setIsGmailList}
-          />
-        )
-      }
-
+        />
+      )}
     </div>
   );
 };

@@ -7,25 +7,33 @@ import { AUTH_SERVER, EMAIL_SERVER } from "@/app/constant/constant";
 
 const API_BASE_URL = AUTH_SERVER;
 
+// ✅ Full permission structure with true by default
 const defaultPermissions = {
-  main: { home: false, whatsapp: false, knowledge_base: false },
-  customer: { immigration_services: false },
-  emails: { inbox: false },
-  documents: { forms: false, vault: false, search: false },
-  user_management: { general: false, settings: false },
-  resources: { docs: false, marketing_material: false, holidays: false },
+  home: { dashboard: true, knowledge_base: true },
+  services: { immigration_services: true },
+  resources: { docs: true, holidays: true, marketing_material: true },
+  workspaces: { emails: true, whatsapp: true, doc_storage: true },
+  user_management: { general: true, settings: true },
 };
 
+// ✅ Deep merge permissions from DB on edit
 const mergePermissions = (defaults, userPerms) => {
+  if (!userPerms) return defaults;
   const merged = { ...defaults };
-  Object.keys(userPerms || {}).forEach((section) => {
-    merged[section] = { ...defaults[section], ...userPerms[section] };
+  Object.keys(userPerms).forEach((section) => {
+    if (merged[section]) {
+      merged[section] = { ...merged[section], ...userPerms[section] };
+    } else {
+      merged[section] = { ...userPerms[section] };
+    }
   });
   return merged;
 };
 
 const CreateUser = ({ show, onClose, userData, editUser }) => {
   const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
     role: "user",
@@ -35,24 +43,25 @@ const CreateUser = ({ show, onClose, userData, editUser }) => {
   });
 
   const [loading, setLoading] = useState(false);
-const [externalEmailOptions, setExternalEmailOptions] = useState([]);
+  const [externalEmailOptions, setExternalEmailOptions] = useState([]);
 
-  // ✅ Autofill on edit
+  // ✅ Autofill for edit
   useEffect(() => {
     if (editUser && userData) {
       setFormData({
+        first_name: userData.first_name || "",
+        last_name: userData.last_name || "",
         email: userData.email || "",
         password: "",
         role: userData.role || "user",
         access: userData.access || "active",
-        permissions: mergePermissions(
-          defaultPermissions,
-          userData.permissions
-        ),
+        permissions: mergePermissions(defaultPermissions, userData.permissions),
         external_emails: userData.external_emails || [],
       });
     } else {
       setFormData({
+        first_name: "",
+        last_name: "",
         email: "",
         password: "",
         role: "user",
@@ -80,36 +89,35 @@ const [externalEmailOptions, setExternalEmailOptions] = useState([]);
       },
     }));
 
-const handleExternalEmailChange = (index, value) => {
-  const updated = [...formData.external_emails];
-  updated[index] = value;
-  setFormData({ ...formData, external_emails: updated });
-};
+  const handleExternalEmailChange = (index, value) => {
+    const updated = [...formData.external_emails];
+    updated[index] = value;
+    setFormData({ ...formData, external_emails: updated });
+  };
 
-const addExternalEmail = () => {
-  setFormData({
-    ...formData,
-    external_emails: [...formData.external_emails, ""],
-  });
-};
+  const addExternalEmail = () => {
+    setFormData({
+      ...formData,
+      external_emails: [...formData.external_emails, ""],
+    });
+  };
 
-const removeExternalEmail = (index) => {
-  const updated = formData.external_emails.filter((_, i) => i !== index);
-  setFormData({ ...formData, external_emails: updated });
-};
+  const removeExternalEmail = (index) => {
+    const updated = formData.external_emails.filter((_, i) => i !== index);
+    setFormData({ ...formData, external_emails: updated });
+  };
 
-
-  // ✅ MAIN SUBMIT HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (editUser) {
-        // ✅ UPDATE USER
         await axios.put(
           `${API_BASE_URL}/users/update/${formData.email}`,
           {
+            first_name: formData.first_name,
+            last_name: formData.last_name,
             role: formData.role,
             access: formData.access,
             permissions: formData.permissions,
@@ -118,15 +126,11 @@ const removeExternalEmail = (index) => {
           { withCredentials: true }
         );
       } else {
-        // ✅ CREATE USER
-        await axios.post(
-          `${API_BASE_URL}/register`,
-          formData,
-          { withCredentials: true }
-        );
+        await axios.post(`${API_BASE_URL}/register`, formData, {
+          withCredentials: true,
+        });
       }
-
-      onClose(); // close modal after success
+      onClose();
     } catch (err) {
       console.error("User save error:", err);
       alert(err?.response?.data?.detail || "Operation failed");
@@ -135,34 +139,26 @@ const removeExternalEmail = (index) => {
     }
   };
 
-useEffect(() => {
-  const fetchExternalEmails = async () => {
-    try {
-      const res = await fetch(
-        `${EMAIL_SERVER}/get-external-emails`
-      );
+  // ✅ Fetch external emails
+  useEffect(() => {
+    const fetchExternalEmails = async () => {
+      try {
+        const res = await fetch(`${EMAIL_SERVER}/get-external-emails`);
+        const data = await res.json();
+        setExternalEmailOptions(data.external_emails || []);
+      } catch (err) {
+        console.error("Failed to load external emails:", err);
+      }
+    };
+    fetchExternalEmails();
+  }, []);
 
-      const data = await res.json();
-
-      setExternalEmailOptions(data.external_emails || []);
-    } catch (err) {
-      console.error("Failed to load external emails:", err);
-    }
-  };
-
-  fetchExternalEmails();
-}, []);
-
-
-
-  console.log('userData' , userData)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
-
       <div className="relative bg-white rounded-2xl border shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
@@ -179,7 +175,6 @@ useEffect(() => {
               </p>
             </div>
           </div>
-
           <button onClick={onClose}>
             <XCircle className="w-7 h-7 text-gray-500 hover:text-gray-700" />
           </button>
@@ -187,6 +182,32 @@ useEffect(() => {
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* FIRST NAME */}
+          <div>
+            <label className="text-sm font-medium">First Name</label>
+            <input
+              type="text"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-3 py-2"
+              required
+            />
+          </div>
+
+          {/* LAST NAME */}
+          <div>
+            <label className="text-sm font-medium">Last Name</label>
+            <input
+              type="text"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-3 py-2"
+              required
+            />
+          </div>
+
           {/* EMAIL */}
           <div>
             <label className="text-sm font-medium">Email</label>
@@ -233,6 +254,7 @@ useEffect(() => {
               <option value="user">User</option>
               <option value="finance">Finance</option>
               <option value="moderator">Moderator</option>
+              <option value="admin">Admin</option>
             </select>
 
             <select
@@ -270,48 +292,43 @@ useEffect(() => {
           </div>
 
           {/* EXTERNAL EMAILS */}
-        <div>
-  <h4 className="font-semibold mb-2">External Emails</h4>
+          <div>
+            <h4 className="font-semibold mb-2">External Emails</h4>
+            {formData.external_emails.map((selectedEmail, idx) => (
+              <div key={idx} className="flex gap-2 mb-2">
+                <select
+                  value={selectedEmail}
+                  onChange={(e) =>
+                    handleExternalEmailChange(idx, e.target.value)
+                  }
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">Select Email</option>
+                  {externalEmailOptions.map((email) => (
+                    <option key={email} value={email}>
+                      {email}
+                    </option>
+                  ))}
+                </select>
 
-  {formData.external_emails.map((selectedEmail, idx) => (
-    <div key={idx} className="flex gap-2 mb-2">
-      
-      {/* ✅ DROPDOWN */}
-      <select
-        value={selectedEmail}
-        onChange={(e) =>
-          handleExternalEmailChange(idx, e.target.value)
-        }
-        className="w-full border rounded px-3 py-2"
-      >
-        <option value="">Select Email</option>
+                <button
+                  type="button"
+                  onClick={() => removeExternalEmail(idx)}
+                  className="px-3 bg-red-600 text-white rounded"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
 
-        {externalEmailOptions.map((email) => (
-          <option key={email} value={email}>
-            {email}
-          </option>
-        ))}
-      </select>
-
-      <button
-        type="button"
-        onClick={() => removeExternalEmail(idx)}
-        className="px-3 bg-red-600 text-white rounded"
-      >
-        Remove
-      </button>
-    </div>
-  ))}
-
-  <button
-    type="button"
-    onClick={addExternalEmail}
-    className="px-4 py-2 bg-blue-600 text-white rounded"
-  >
-    Add Email
-  </button>
-</div>
-
+            <button
+              type="button"
+              onClick={addExternalEmail}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Add Email
+            </button>
+          </div>
 
           {/* SUBMIT */}
           <div className="flex justify-end gap-3 pt-4 border-t">

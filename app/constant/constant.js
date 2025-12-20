@@ -26,3 +26,12 @@ export const EMAIL_SERVER = "https://emails.guruaccounting.com/api/v1";
 // export const AUTH_SERVER = process.env.NEXT_PUBLIC_AUTH_SERVER;
 // export const WHATSAPP_SERVER = process.env.NEXT_PUBLIC_WHATSAPP_SERVER;
 // export const EMAIL_SERVER = process.env.NEXT_PUBLIC_EMAIL_SERVER;
+
+
+
+// export const API_BASE_URL = "http://localhost:4003/api/v1";
+// export const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+// export const AI_MODEL_SERVER = process.env.NEXT_PUBLIC_AI_MODEL_SERVER;
+// export const AUTH_SERVER = "http://localhost:4003/api/v1";
+// export const WHATSAPP_SERVER = process.env.NEXT_PUBLIC_WHATSAPP_SERVER;
+// export const EMAIL_SERVER = process.env.NEXT_PUBLIC_EMAIL_SERVER;

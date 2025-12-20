@@ -257,17 +257,19 @@ function SidebarTrigger({ className = "", onClick, ...props }) {
         flex items-center justify-center
         rounded-md
         bg-transparent
-        text-white
-        hover:bg-white hover:p-1 hover:text-prime-black
+        text-white        /* initial white */
+        hover:bg-white 
+        hover:text-black  /* hover black */
         transition-colors duration-200
         ${className}
       `}
       {...props}
     >
-      <PanelLeftIcon className="h-6 w-6" />
+      <PanelLeftIcon className="h-6 w-6 stroke-current" /> {/* ✅ use stroke-current */}
     </button>
   )
 }
+
 
 
 export default SidebarTrigger

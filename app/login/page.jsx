@@ -8,6 +8,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, Sparkles } from "lucide-react"
 import { API_BASE_URL } from "../constant/constant"
 import { authApi } from "@/app/lib/apis";
 import Image from "next/image"
+import RoleDropdown from "@/components/customs/role-dropdown/RoleDropdown"
 
 export default function Login() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+const [role, setRole] = useState("Admin");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -52,7 +54,7 @@ export default function Login() {
   return (
     <div className="flex flex-col lg:flex-row h-screen justify-center">
       {/* Left side with welcome message */}
-      <div className="hidden lg:flex items-center justify-center lg:w-[60%] relative bg-[#657c6a] overflow-hidden">
+      <div className="hidden lg:flex items-center justify-center lg:w-[60%] relative bg-prime overflow-hidden">
         {/* <div className="absolute inset-0 bg-black/20" /> */}
         {/* <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" /> */}
         {/* <div className="absolute top-20 left-20 w-72 h-72 bg-[#dfe6e9]/20 rounded-full blur-3xl animate-pulse" /> */}
@@ -150,21 +152,11 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="role" className="block text-sm font-medium text-gray-500">
-                Select Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                // value={formData.role}
-                // onChange={handleChange}
-                required
-                disabled={isLoading}
-                className="w-full h-12 pl-10 pr-10 bg-white border text-prime-black border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c99c4a]"
-              >
-                <option value="Admin">Admin</option>
-                <option value="Member">Member</option>
-              </select>
+           <RoleDropdown
+  value={role}
+  onChange={(val) => setRole(val)}
+  isLoading={false}
+/>
             </div>
 
             <div className="flex justify-end text-sm">
