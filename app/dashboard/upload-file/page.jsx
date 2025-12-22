@@ -342,7 +342,7 @@ export default function UploadPage() {
     const pathKey = fileObj.relativePath;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch("https://cloud.guruaccounting.com//upload/create-resumable-upload", {
+        const res = await fetch("https://cloud.guruaccounting.com/upload/create-resumable-upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
